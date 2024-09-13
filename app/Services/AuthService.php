@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use App\Models\User;
+use App\Models\Assignee;
 use App\Mail\ForgotPassword;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,10 @@ class AuthService
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
 
+            ]);
+            Assignee::create([
+                'user_id' => $user->id,
+                'taskowner_id' => $user->id,
             ]);
             Auth::login($user);
             $token = $user->createToken('auth_token')->plainTextToken;
