@@ -15,7 +15,6 @@ class CategoryController extends Controller
     }
     public function getcategory()
     {
-        return response()->json(Category::all(),200);
-
+        return response()->json(Category::where('id', '<>', 1)->get(), 200);
     }
 }

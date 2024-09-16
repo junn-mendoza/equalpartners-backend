@@ -14,4 +14,10 @@ class Category extends Model
         'color',
         'icon',
     ];
+
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_categories')
+            ->withPivot('custom_name', 'color');
+    }
 }
