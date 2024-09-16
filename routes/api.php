@@ -31,6 +31,7 @@ Route::controller(TaskController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/tasks', 'get_tasks');
         Route::post('/tasks', 'save_task');
+        Route::post('/task', 'get_task');
     });
 });
 

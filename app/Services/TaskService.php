@@ -4,13 +4,14 @@ namespace App\Services;
 
 use Exception;
 use App\Models\Task;
+use App\Models\Frequent;
 use App\Models\TaskUser;
+use App\Models\TaskCategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Resources\TaskResource;
-use App\Models\Frequent;
-use App\Models\TaskCategory;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\SingleTaskResource;
 
 class TaskService
 {
@@ -85,17 +86,17 @@ class TaskService
                 TaskCategory::UpdateOrCreate(
                     [
                         'task_id' => $task->id,
-                        'category_id' => $cat['id'],
+                        'category_id' => $cat['category_id'],
                     ],
                     [
                         'task_id' => $task->id,
-                        'category_id' => $cat['id'],
+                        'category_id' => $cat['category_id'],
                         'custom_name' => $cat['name'],
                         'color' => $cat['color'],
                     ]
                 );
                 // Add to the list of category IDs to keep
-                $categoryIdsToKeep[] = $cat['id'];
+                $categoryIdsToKeep[] = $cat['category_id'];
 
                 // Step 2: Delete categories that are not in the list
                 TaskCategory::where('task_id', $task->id)
@@ -103,7 +104,7 @@ class TaskService
                     ->delete();
             }
             DB::commit();
-            return response()->json('Task successfully saved.', 200);
+            return response()->json('Task successfully saved.', 201);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Module (TaskService) save - " . $e->getMessage());
@@ -112,12 +113,30 @@ class TaskService
         return response()->json('Error with saving.', 500);
         //return $user;
     }
+
+    public function task($task_id)
+    {
+        $task = Task::with(['task_users.user', 'frequencies', 'categories'])
+            ->whereHas('task_users', function ($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->where('id',$task_id)
+            ->first();
+
+       
+        return response()->json(new SingleTaskResource($task),200 );
+    }
     public function tasks()
     {
 
-        $task = Task::with(['task_users.user', 'frequencies', 'categories']) // Updated path to follow relationships
-            ->where('id', 1)
+
+        $task = Task::with(['task_users.user', 'frequencies', 'categories'])
+            ->whereHas('task_users', function ($query) {
+                $query->where('user_id', Auth::id());
+            })
             ->get();
+
+       
         return response()->json(
             [
                 'task' => TaskResource::collection($task),

@@ -17,6 +17,10 @@ class TaskController extends Controller
     {
         return $this->taskService->tasks();
     }
+    public function get_task(Request $request)
+    {        
+        return $this->taskService->task($request->task_id);
+    }
     public function save_task(TaskRequest $request)
     {
 
