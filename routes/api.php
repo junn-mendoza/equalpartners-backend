@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AssignController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Resources\TaskResource;
 
 
@@ -25,6 +26,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::controller(CategoryController::class)->group(function () {
     Route::get('/categories', 'getcategory');
+});
+
+Route::controller(ProfileController::class)->group(function () {
+    Route::post('/profiles', 'profiles');
 });
 
 Route::controller(TaskController::class)->group(function () {
