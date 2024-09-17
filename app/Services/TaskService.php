@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\Frequent;
 use App\Models\TaskUser;
@@ -127,21 +128,45 @@ class TaskService
         return response()->json(new SingleTaskResource($task),200 );
     }
     public function tasks()
-    {
-
-
+    {        
         $task = Task::with(['task_users.user', 'frequencies', 'categories'])
             ->whereHas('task_users', function ($query) {
                 $query->where('user_id', Auth::id());
             })
             ->get();
 
-       
+           
+        $tasks = $task->toArray() === []? $this->emptyTask():  TaskResource::collection($task);
         return response()->json(
             [
-                'task' => TaskResource::collection($task),
+                'task' => $tasks,
             ],
             200
         );
+    }
+    private function emptyTask()
+    {
+        $tasks = [];
+        for ($i = 0; $i < 7; $i++) {
+            $date = Carbon::now()->addDays($i); // Get the date for each of the next 7 days
+            $formattedDate = $this->formatCreatedAt($date);
+            $tasks[] = [
+                'stringDate' => $formattedDate,
+                'string_comment' => 'No tasks available',
+            ];
+        }
+        return $tasks;
+    }
+    private function formatCreatedAt($createdAt)
+    {
+        $date = Carbon::parse($createdAt);
+
+        if ($date->isToday()) {
+            return 'Today';
+        } elseif ($date->isTomorrow()) {
+            return 'Tomorrow';
+        } else {
+            return $date->format('l, d F'); // Example: "Wednesday, 18 September"
+        }
     }
 }

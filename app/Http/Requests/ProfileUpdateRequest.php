@@ -26,7 +26,7 @@ class ProfileUpdateRequest extends FormRequest
             'role' => 'required|string',
             'name' => 'required|string|min:2',
             'email' => ['required', 'string', 'email'],
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
     }
 }

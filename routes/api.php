@@ -29,7 +29,10 @@ Route::controller(CategoryController::class)->group(function () {
 });
 
 Route::controller(ProfileController::class)->group(function () {
-    Route::post('/profiles', 'profiles');
+    Route::post('/profile', 'profile');
+    Route::post('/homename', 'homename');
+    Route::post('/homeaddress', 'homeaddress');
+    Route::post('/sendinvitation','invitation');
 });
 
 Route::controller(TaskController::class)->group(function () {

@@ -108,7 +108,6 @@ class TaskResource extends JsonResource
             ];
         }
     }
-
     return $tasks;
     }
     // Helper function to format 'created_at'
