@@ -50,4 +50,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Assignee::class);
     }
+
+    public function place()
+    {
+        return $this->hasOne(Place::class);
+    }
 }

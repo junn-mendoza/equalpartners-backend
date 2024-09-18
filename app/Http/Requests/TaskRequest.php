@@ -22,6 +22,7 @@ class TaskRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'place_id' => 'required|integer',
             'title' => 'required|string',
             'assignee' => 'required|array',
             "dueDate" => 'nullable|date',

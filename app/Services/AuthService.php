@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use App\Models\User;
+use App\Models\Place;
 use App\Models\Invite;
 use App\Models\Assignee;
 use App\Mail\ForgotPassword;
@@ -77,8 +78,16 @@ class AuthService
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
-
             ]);
+
+            Place::create([
+                'user_id' => $user->id,
+                'name' => 'My home',
+                'address' => null,
+            ]);
+
+            $user->place_id = 1;
+            $user->save();
             Assignee::create([
                 'user_id' => $user->id,
                 'taskowner_id' => $user->id,
@@ -124,7 +133,7 @@ class AuthService
 
         request()->session()->regenerate();
 
-        $user = Auth::user();
+        $user = Auth::user()->load('place');
 
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;

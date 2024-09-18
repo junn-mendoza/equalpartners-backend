@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Invite;
 use App\Mail\invitation;
 use Illuminate\Http\Request;
 use App\Services\UserService;
+use App\Services\PlaceService;
 use App\Services\ImageDataService;
+use App\Http\Requests\PlaceRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -16,12 +19,27 @@ class ProfileController extends Controller
 {
     protected UserService $userService;
     protected ImageDataService $imageDataService;
-    public function __construct(UserService $userService, ImageDataService $imageDataService)
+    protected PlaceService $placeService;
+    public function __construct(
+        UserService $userService, 
+        ImageDataService $imageDataService,
+        PlaceService $placeService
+        )
     {
         $this->userService = $userService;
         $this->imageDataService = $imageDataService;
+        $this->placeService = $placeService;
     }
 
+    public function places(PlaceRequest $request)
+    {
+        return $this->placeService->add($request->validated());
+    }
+
+    public function get_places()
+    {
+        return $this->placeService->get_places();
+    }
     public function homename(Request $request)
     {
         $user = Auth::user();
@@ -38,6 +56,14 @@ class ProfileController extends Controller
         return response()->json('Home address successfully saved', 200);
     }
 
+    public function update_place($place_id)
+    {
+        $id = Auth::id();
+        $user = User::where('id', $id)->first();
+        $user->place_id = $place_id;
+        $user->save();
+        return response()->json('Sucessfully updated.', 200);
+    }
     public function invitation(Request $request)
     {
         $recipientName = $request->input('name'); // The recipient's name

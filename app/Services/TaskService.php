@@ -18,11 +18,12 @@ class TaskService
 {
     public function save($data)
     {
-
         $id = Auth::id();
         DB::beginTransaction();
         try {
             $taskData = [
+                'place_id'=> $data['place_id'],
+                'duedate'=> $data['dueDate'],
                 'name' => $data['title'],
                 'hr' => $data['hours'],
                 'min' => $data['minutes'],
@@ -127,12 +128,12 @@ class TaskService
        
         return response()->json(new SingleTaskResource($task),200 );
     }
-    public function tasks()
+    public function tasks($place_id)
     {        
         $task = Task::with(['task_users.user', 'frequencies', 'categories'])
             ->whereHas('task_users', function ($query) {
                 $query->where('user_id', Auth::id());
-            })
+            })->where('place_id',$place_id)
             ->get();
 
            
