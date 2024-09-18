@@ -4,8 +4,10 @@ namespace App\Services;
 
 use Exception;
 use App\Models\User;
+use App\Models\Invite;
 use App\Models\Assignee;
 use App\Mail\ForgotPassword;
+use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,29 +21,33 @@ class AuthService
     public function forgotpassword($data)
     {
         $user = User::where('email', $data['email'])->first();
-        if(!$user) {
-            return response()->json([
-                'error' => 'Not found!',
-                'error_message' => 'Unable to locate your email!',
-            ]
+        if (!$user) {
+            return response()->json(
+                [
+                    'error' => 'Not found!',
+                    'error_message' => 'Unable to locate your email!',
+                ]
             );
         }
         $key = env('EQUALPARTNER_API_KEY');
         // send email 
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        if($key != '') {
+        if ($key != '') {
             $details = [
                 'email' => $data['email'],
                 'api_key' => $key,
                 'url' =>  $protocol . '://' . $_SERVER['HTTP_HOST'] . '/changepassword'
             ];
             try {
-    
-            Mail::to($data['email'])->send(new ForgotPassword($details));
-            //dd(1);
-            return response()->json([
-                'message'=>'Send successfully']
-                ,200);
+
+                Mail::to($data['email'])->send(new ForgotPassword($details));
+                //dd(1);
+                return response()->json(
+                    [
+                        'message' => 'Send successfully'
+                    ],
+                    200
+                );
             } catch (Exception $e) {
                 // Failed to send email
                 return response()->json(['message' => 'Failed to send email. Please try again.', 'error' => $e->getMessage()], 500);
@@ -49,20 +55,20 @@ class AuthService
         }
         return response()->json('Cannot generate the api_key.', 500);
     }
-        
-        
+
+
 
     public function passwordchange($data)
     {
-        $user = User::where('email',$data['email'])->first();
-        if($user) {
+        $user = User::where('email', $data['email'])->first();
+        if ($user) {
             $user->password = $data['password'];
             $user->save();
             return response()->json('Sucessfully changed your password.', 200);
-        } else 
-        return response()->json('Email not found.', 401);
+        } else
+            return response()->json('Email not found.', 401);
     }
-    
+
     public function register($data): JsonResponse | string
     {
         DB::beginTransaction();
@@ -79,6 +85,22 @@ class AuthService
             ]);
             Auth::login($user);
             $token = $user->createToken('auth_token')->plainTextToken;
+
+            $invite = Invite::where('email', $data['email'])
+                ->first();
+
+            if ($invite) {
+
+                Notification::create([
+                    'user_id' => $invite->user_id,
+                    'message' => $invite->name . ' accepted your invitation.',
+                ]);
+                Assignee::create([
+                    'user_id' => $user->id,
+                    'taskowner_id' => $invite->user_id,
+                ]);
+                $invite->delete();
+            }
             DB::commit();
             return response()->json(['user' => $user, 'access_token' => $token], 200);
         } catch (ValidationException $e) {

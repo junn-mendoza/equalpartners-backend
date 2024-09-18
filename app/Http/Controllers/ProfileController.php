@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invite;
 use App\Mail\invitation;
 use Illuminate\Http\Request;
 use App\Services\UserService;
@@ -37,14 +38,25 @@ class ProfileController extends Controller
         return response()->json('Home address successfully saved', 200);
     }
 
-    public function invitation(Request $request) 
+    public function invitation(Request $request)
     {
         $recipientName = $request->input('name'); // The recipient's name
         $playStoreLink = 'https://play.google.com/store/apps/details?id=com.equalpartner';
         $appStoreLink = 'https://apps.apple.com/app/equalpartners';
-        
+
 
         Mail::to($request->input('email'))->send(new invitation($recipientName, $playStoreLink, $appStoreLink));
+
+        Invite::updateOrCreate(
+            [
+                'email' => $request->input('email')
+
+            ],
+            [
+                'user_id' => Auth::id(),
+                'name' => $request->input('name'),
+            ]
+        );
         return 'Invitation sent!';
     }
 
@@ -70,14 +82,14 @@ class ProfileController extends Controller
 
             // Save the data to the database
 
-           
+
         }
 
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->age = $request->input('age');
         $user->role = $request->input('role');
-        if($hasImage) {
+        if ($hasImage) {
             $user->profile =  $webpPath;
         }
         $user->save();

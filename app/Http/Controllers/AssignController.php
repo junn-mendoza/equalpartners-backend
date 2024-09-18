@@ -17,4 +17,9 @@ class AssignController extends Controller
     {
         return $this->assignService->showAssignee();
     }
+
+    public function removeassignee(Request $request)
+    {
+        return $this->assignService->remove($request->input('user_id'));
+    }
 }

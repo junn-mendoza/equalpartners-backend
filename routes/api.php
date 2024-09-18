@@ -20,6 +20,7 @@ Route::get('/test', function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(AssignController::class)->group(function () {
         Route::get('/assignee', 'assignee');
+        Route::delete('/removeassignee', 'removeassignee');
     });
 });
 
@@ -29,10 +30,12 @@ Route::controller(CategoryController::class)->group(function () {
 });
 
 Route::controller(ProfileController::class)->group(function () {
-    Route::post('/profile', 'profile');
-    Route::post('/homename', 'homename');
-    Route::post('/homeaddress', 'homeaddress');
-    Route::post('/sendinvitation','invitation');
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/profile', 'profile');
+        Route::post('/homename', 'homename');
+        Route::post('/homeaddress', 'homeaddress');
+        Route::post('/sendinvitation', 'invitation');
+    });
 });
 
 Route::controller(TaskController::class)->group(function () {
