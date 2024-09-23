@@ -14,4 +14,9 @@ class Place extends Model
         'name',
         'address',
     ];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_places')->withTimestamps();
+    }
 }

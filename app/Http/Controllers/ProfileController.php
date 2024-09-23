@@ -113,8 +113,8 @@ class ProfileController extends Controller
 
         $user->name = $request->input('name');
         $user->email = $request->input('email');
-        $user->age = $request->input('age');
-        $user->role = $request->input('role');
+        // $user->age = $request->input('age');
+        // $user->role = $request->input('role');
         if ($hasImage) {
             $user->profile =  $webpPath;
         }

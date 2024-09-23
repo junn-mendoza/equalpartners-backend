@@ -57,7 +57,7 @@ class TaskListingService
         // Days of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
         $daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
-        $dateText = 'Every ' . $this->ordinal($repeat) . ' ' . ($timeframe=='weekly'?'week':'month');
+        $dateText = 'Every ' . ordinal($repeat) . ' ' . ($timeframe=='weekly'?'week':'month');
 
         if ($timeframe === 'weekly') {
             // For weekly: map frequencies to days of the week
@@ -69,7 +69,7 @@ class TaskListingService
         } elseif ($timeframe === 'monthly') {
             // For monthly: map frequencies to ordinal days (e.g., 1st, 2nd, 3rd, ...)
             $days = array_map(function ($frequency) {
-                return $this->ordinal($frequency) . ' day';
+                return ordinal($frequency) . ' day';
             }, $frequencies);
 
             $dateText .= ' on ' . implode(', ', $days);
@@ -89,13 +89,13 @@ class TaskListingService
                 foreach ($task->frequencies as $frequency) {
                     foreach ($task->users as $user) {
                         // Calculate the due date based on frequency and timeframe
-                        $dueDate = $this->calculateDueDate($frequency->frequent, $task->timeframe);
+                        $dueDate = calculateDueDate($frequency->frequent, $task->timeframe);
                         $dueDateCarbon = Carbon::parse($dueDate);
     
                         // Check if the due date is within 7 days from today
                         if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
                             // Determine the header for the task (Today, Tomorrow, or specific date)
-                            $header = $this->getHeaderForDate($dueDateCarbon, $currentDate);
+                            $header = getHeaderForDate($dueDateCarbon, $currentDate);
     
                             // Add the task to the output array
                             $tmp[$header][] = [
@@ -108,7 +108,7 @@ class TaskListingService
                                 'color' => $task->categories[0]->color,
                                 'image' => $user->profile,
                                 'repeat' => $task->repeat,
-                                'data_text' => $this->generateDateText($task->repeat, $task->timeframe, $task->frequencies->pluck('frequent')->toArray())
+                                'data_text' => generateDateText($task->repeat, $task->timeframe, $task->frequencies->pluck('frequent')->toArray())
                             ];
                         }
                     }
@@ -122,7 +122,7 @@ class TaskListingService
                     // Check if the due date is within 7 days from today
                     if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
                         // Determine the header for the task (Today, Tomorrow, or specific date)
-                        $header = $this->getHeaderForDate($dueDateCarbon, $currentDate);
+                        $header = getHeaderForDate($dueDateCarbon, $currentDate);
     
                         // Add the task to the output array
                         $tmp[$header][] = [
@@ -145,7 +145,7 @@ class TaskListingService
         // Check if any day has no tasks and add the "No tasks available" message
         for ($i = 0; $i <= 7; $i++) {
             $date = $currentDate->copy()->addDays($i);
-            $header = $this->getHeaderForDate($date, $currentDate);
+            $header = getHeaderForDate($date, $currentDate);
             if (!isset($tmp[$header])) {
                 $tmp[$header][] = ['name' => 'No tasks available.'];
             }

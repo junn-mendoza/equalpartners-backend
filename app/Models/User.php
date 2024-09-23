@@ -51,8 +51,14 @@ class User extends Authenticatable
         return $this->hasMany(Assignee::class);
     }
 
-    public function place()
+    public function places()
     {
-        return $this->hasOne(Place::class);
+        return $this->belongsToMany(Place::class, 'user_places')->withTimestamps();
+    }
+
+    // Define many-to-many relationship with Task via TaskUser
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_users')->withTimestamps();
     }
 }

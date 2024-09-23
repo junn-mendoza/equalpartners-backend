@@ -59,7 +59,7 @@ class TaskResource extends JsonResource
         for ($i = 0; $i < 7; $i++) {
             $date = Carbon::now()->addDays($i); // Get the date for each of the next 7 days
             $formattedDate = $this->formatCreatedAt($date);
-            $duedate = Carbon::parse("2024-09-25 00:00:00");
+            $duedate = Carbon::parse($this->duedate);
             //dd($this->duedate);
             if ($duedate->isSameDay($date)) {
                 // Task is available on this day
@@ -81,6 +81,7 @@ class TaskResource extends JsonResource
                             'user_id' => $taskUser->user->id,
                             'name' => $taskUser->user->name,
                             'email' => $taskUser->user->email,
+                            'profile' => $taskUser->user->profile,
                         ];
                     }),
                     'frequencies' => $this->frequencies->map(function ($frequency) {
