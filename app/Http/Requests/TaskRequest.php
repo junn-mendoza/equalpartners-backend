@@ -22,7 +22,7 @@ class TaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'place_id' => 'required|integer',
+
             'title' => 'required|string',
             'assignee' => 'required|array',
             "dueDate" => 'nullable|date',
@@ -36,6 +36,7 @@ class TaskRequest extends FormRequest
             'timeframe' => 'nullable|string',
             'isAdd' => 'nullable|boolean',
             'task_id' => 'nullable|integer',
+            'place_id' => 'required|integer',
         ];
     }
 }

@@ -7,8 +7,14 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AssignController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Resources\TaskResource;
 
+Route::controller(TaskController::class)->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/tasks', 'save_task');
+        Route::get('/tasks/{place_id}', 'get_tasks');
+        Route::post('/task', 'get_task');
+    });
+});
 
 Route::get('/user', function (Request $request) {
     return $request->user()->load('place');
@@ -41,13 +47,6 @@ Route::controller(ProfileController::class)->group(function () {
     });
 });
 
-Route::controller(TaskController::class)->group(function () {
-    Route::middleware(['auth:sanctum'])->group(function () {
-        Route::get('/tasks/{place_id}', 'get_tasks');
-        Route::post('/tasks', 'save_task');
-        Route::post('/task', 'get_task');
-    });
-});
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/register', 'register');

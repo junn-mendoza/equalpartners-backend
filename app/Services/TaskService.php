@@ -22,8 +22,8 @@ class TaskService
         DB::beginTransaction();
         try {
             $taskData = [
-                'place_id'=> $data['place_id'],
-                'duedate'=> $data['dueDate'],
+                'place_id' => $data['place_id'],
+                'duedate' => $data['dueDate'],
                 'name' => $data['title'],
                 'hr' => $data['hours'],
                 'min' => $data['minutes'],
@@ -122,26 +122,25 @@ class TaskService
             ->whereHas('task_users', function ($query) {
                 $query->where('user_id', Auth::id());
             })
-            ->where('id',$task_id)
+            ->where('id', $task_id)
             ->first();
 
-       
-        return response()->json(new SingleTaskResource($task),200 );
+
+        return response()->json(new SingleTaskResource($task), 200);
     }
     public function tasks($place_id)
-    {        
+    {
         $task = Task::with(['task_users.user', 'frequencies', 'categories'])
             ->whereHas('task_users', function ($query) {
                 $query->where('user_id', Auth::id());
-            })->where('place_id',$place_id)
+            })->where('place_id', $place_id)
             ->get();
-
-           
-        $tasks = $task->toArray() === []? $this->emptyTask():  TaskResource::collection($task);
+        // dump($task->toArray() === []);
+        // dd($task);
+        $tasks = $task->toArray() === [] ? $this->emptyTask() :  TaskResource::collection($task);
         return response()->json(
-            [
-                'task' => $tasks,
-            ],
+            $tasks,
+
             200
         );
     }

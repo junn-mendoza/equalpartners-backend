@@ -13,17 +13,16 @@ class TaskController extends Controller
     {
         $this->taskService = $taskService;
     }
+    public function save_task(TaskRequest $request)
+    {
+        return $this->taskService->save($request->validated());
+    }
     public function get_tasks($place_id)
     {
         return $this->taskService->tasks($place_id);
     }
     public function get_task(Request $request)
-    {        
-        return $this->taskService->task($request->task_id);
-    }
-    public function save_task(TaskRequest $request)
     {
-
-        return $this->taskService->save($request->validated());
+        return $this->taskService->task($request->task_id);
     }
 }
