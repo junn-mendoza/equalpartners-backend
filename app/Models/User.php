@@ -56,6 +56,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Place::class, 'user_places')->withTimestamps();
     }
 
+    public function place()
+    {
+        return $this->belongsTo(Place::class, 'user_places')->withTimestamps();
+    }
+
     // Define many-to-many relationship with Task via TaskUser
     public function tasks()
     {

@@ -11,6 +11,7 @@ class Place extends Model
 
     protected $fillable = [
         'user_id',
+        'alias',
         'name',
         'address',
     ];
@@ -18,5 +19,10 @@ class Place extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_places')->withTimestamps();
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_places')->withTimestamps();
     }
 }

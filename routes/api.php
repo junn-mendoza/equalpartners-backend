@@ -12,31 +12,30 @@ use App\Services\TaskListingService;
 Route::controller(TaskController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/tasks', 'save_task');
-       // Route::get('/tasks/{place_id}', 'get_tasks');
+        // Route::get('/tasks/{place_id}', 'get_tasks');
         Route::post('/task', 'get_task');
 
-        Route::get('/tasks/{place_id}', function($place_id){
-            dd($place_id);
+        Route::get('/tasks/{place_id}', function ($place_id) {
+            //dd($place_id);
             $places = App\Models\Place::with([
                 'users',
                 'users.tasks',
                 'users.tasks.frequencies',
-                'users.tasks.categories'])->where('id',2)->get();
-            
-            $places =  App\Models\Task::with(['users','frequencies', 'categories'])
-                ->where('place_id', 2)
+                'users.tasks.categories'
+            ])->where('id', 2)->get();
+
+            $places =  App\Models\Task::with(['users', 'frequencies', 'categories'])
+                ->where('place_id', $place_id)
                 ->get();
             $tasks = new TaskListingService();
             $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));
-            return response()->json( $sorted,200);
-            
+            return response()->json($sorted, 200);
         });
-        
     });
 });
 
 Route::get('/user', function (Request $request) {
-    return $request->user()->load('place');
+    return $request->user()->load('places');
 })->middleware('auth:sanctum');
 
 Route::get('/test', function () {
@@ -76,6 +75,3 @@ Route::controller(AuthController::class)->group(function () {
         Route::post('/logout', 'logout');
     });
 });
-
-
-

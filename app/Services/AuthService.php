@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Place;
 use App\Models\Invite;
 use App\Models\Assignee;
+use App\Models\UserPlace;
 use App\Mail\ForgotPassword;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
@@ -82,17 +83,22 @@ class AuthService
 
             Place::create([
                 'user_id' => $user->id,
+                'alias' => $user->name . "'s home",
                 'name' => 'My home',
                 'address' => null,
             ]);
 
-            $user->place_id = 1;
+            $user->place_id = 1; //default
             $user->save();
             Assignee::create([
                 'user_id' => $user->id,
                 'taskowner_id' => $user->id,
             ]);
             Auth::login($user);
+            UserPlace::create([
+                'place_id' => 1,
+                'user_id' =>  $user->id,
+            ]);
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $invite = Invite::where('email', $data['email'])
@@ -133,7 +139,7 @@ class AuthService
 
         request()->session()->regenerate();
 
-        $user = Auth::user()->load('place');
+        $user = Auth::user()->load('places');
 
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;

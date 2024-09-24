@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('places', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->string('alias');
             $table->string('name');
             $table->text('address')->nullable();
             $table->timestamps();
 
             // Add a composite unique constraint for user_id and name
-            $table->unique(['user_id', 'name']);
+            $table->unique(['user_id', 'alias']);
         });
     }
 
