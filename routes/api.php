@@ -13,20 +13,13 @@ Route::controller(TaskController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/tasks', 'save_task');
         // Route::get('/tasks/{place_id}', 'get_tasks');
-        Route::post('/task', 'get_task');
+        Route::get('/task/{task_id}', 'get_task');
 
         Route::get('/tasks/{place_id}', function ($place_id) {
-            //dd($place_id);
-            $places = App\Models\Place::with([
-                'users',
-                'users.tasks',
-                'users.tasks.frequencies',
-                'users.tasks.categories'
-            ])->where('id', 2)->get();
-
             $places =  App\Models\Task::with(['users', 'frequencies', 'categories'])
                 ->where('place_id', $place_id)
                 ->get();
+                //return response()->json($places, 200);
             $tasks = new TaskListingService();
             $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));
             return response()->json($sorted, 200);

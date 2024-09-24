@@ -17,9 +17,9 @@ class TaskController extends Controller
     {
         return $this->taskService->save($request->validated());
     }
-    public function get_tasks($place_id)
+    public function get_tasks($task_id)
     {
-        return $this->taskService->tasks($place_id);
+        return $this->taskService->task($task_id);
     }
     public function get_task(Request $request)
     {

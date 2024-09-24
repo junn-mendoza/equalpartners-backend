@@ -24,11 +24,11 @@ class SingleTaskResource extends JsonResource
             'reminder' => $this->reminder,
             'repeat' => $this->repeat,
             'timeframe' => $this->timeframe,
-            'assignee' => $this->task_users->map(function ($taskUser) {
+            'assignee' => $this->users->map(function ($taskUser) {
                     return [
-                        'user_id' => $taskUser->user->id,
-                        'name' => $taskUser->user->name,
-                        'email' => $taskUser->user->email,
+                        'user_id' => $taskUser->id,
+                        'name' => $taskUser->name,
+                        'email' => $taskUser->email,
                     ];
                 }),
             'repeatDates' => $this->frequencies->map(function ($frequency) {
