@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Invite;
 use App\Models\Assignee;
 use App\Models\TaskUser;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,17 @@ class AssignService
         return response()->json(AssigneeResource::collection($assignees), 200);
     }
 
+    public function add($data)
+    {
+        Assignee::create([
+            'taskowner_id'=> $data['id'],
+            'user_id'=> $data['user_id'],
+            'place_id'=> $data['place_id'],
+        ]);
+
+        Invite::where('email', $data['email'])->delete();
+        return response()->json('Assignee added successfully', 200);
+    }
     public function remove($user_id): JsonResponse
     {
         $id = Auth::id();

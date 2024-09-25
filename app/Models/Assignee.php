@@ -9,14 +9,14 @@ class Assignee extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'place_id',
         'user_id',
         'taskowner_id',
-
     ];
 
     // Define the relationship with User
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id'); // 'user_id' is the foreign key in the assignees table
+        return $this->belongsTo(User::class); // 'user_id' is the foreign key in the assignees table
     }
 }

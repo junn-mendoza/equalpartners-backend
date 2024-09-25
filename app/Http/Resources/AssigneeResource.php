@@ -15,7 +15,7 @@ class AssigneeResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'user_id' => $this->id,
+            'user_id' => $this->user_id,
             'name'=> $this->user->name,
             'email'=> $this->user->email,
             'profile'=> $this->user->profile,

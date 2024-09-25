@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Resources\UserLoginResource;
 use Exception;
 use App\Models\User;
 use App\Models\Place;
@@ -73,32 +74,48 @@ class AuthService
 
     public function register($data): JsonResponse | string
     {
+        //dd($data);
         DB::beginTransaction();
         try {
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
+                'place_id'=> 1,
             ]);
 
-            Place::create([
+            $place = Place::create([
                 'user_id' => $user->id,
                 'alias' => $user->name . "'s home",
                 'name' => 'My home',
                 'address' => null,
             ]);
-
-            $user->place_id = 1; //default
+            
+            
+            $user->place_id = $place->id; //default
             $user->save();
+
+            Log::info('Creating Assignee with place_id: ' . $place->id);
             Assignee::create([
+                'place_id'=> 1,
                 'user_id' => $user->id,
                 'taskowner_id' => $user->id,
             ]);
-            Auth::login($user);
+
+            // DB::insert('INSERT INTO assignees (place_id, user_id, taskowner_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [
+            //     $place->id,
+            //     $user->id,
+            //     $user->id,
+            //     now(),
+            //     now(),
+            // ]);
+
+           
             UserPlace::create([
-                'place_id' => 1,
+                'place_id' => $place->id,
                 'user_id' =>  $user->id,
             ]);
+
             $token = $user->createToken('auth_token')->plainTextToken;
 
             $invite = Invite::where('email', $data['email'])
@@ -111,13 +128,15 @@ class AuthService
                     'message' => $invite->name . ' accepted your invitation.',
                 ]);
                 Assignee::create([
+                    'place_id'=> $place->id,
                     'user_id' => $user->id,
                     'taskowner_id' => $invite->user_id,
                 ]);
                 $invite->delete();
             }
+            Auth::login($user);
             DB::commit();
-            return response()->json(['user' => $user, 'access_token' => $token], 200);
+            return response()->json(new UserLoginResource($user, $token), 200);
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::error($e->getMessage());
@@ -143,6 +162,7 @@ class AuthService
 
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;
-        return response()->json(['user' => $user, 'access_token' => $token, 'token_type' => 'Bearer'], 200);
+        //return response()->json(['user' => $user, 'access_token' => $token, 'token_type' => 'Bearer'], 200);
+        return response()->json(new UserLoginResource($user, $token), 200);
     }
 }

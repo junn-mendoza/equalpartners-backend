@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('assignees', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('place_id')->constrained('places')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->integer('taskowner_id');
             $table->timestamps();
         });
+
+        
     }
 
     /**

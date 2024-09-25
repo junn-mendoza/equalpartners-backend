@@ -7,26 +7,20 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AssignController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Resources\UserResource;
 use App\Services\TaskListingService;
 
 Route::controller(TaskController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/tasks', 'save_task');
         // Route::get('/tasks/{place_id}', 'get_tasks');
-        Route::post('/task', 'get_task');
+        Route::get('/task/{task_id}', 'get_task');
 
         Route::get('/tasks/{place_id}', function ($place_id) {
-            //dd($place_id);
-            $places = App\Models\Place::with([
-                'users',
-                'users.tasks',
-                'users.tasks.frequencies',
-                'users.tasks.categories'
-            ])->where('id', 2)->get();
-
             $places =  App\Models\Task::with(['users', 'frequencies', 'categories'])
                 ->where('place_id', $place_id)
                 ->get();
+                //return response()->json($places, 200);
             $tasks = new TaskListingService();
             $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));
             return response()->json($sorted, 200);
@@ -35,7 +29,9 @@ Route::controller(TaskController::class)->group(function () {
 });
 
 Route::get('/user', function (Request $request) {
-    return $request->user()->load('places');
+      //new UserResource(
+    return new UserResource($request->user()->load('places'));  
+    //return $request->user()->load('places');
 })->middleware('auth:sanctum');
 
 Route::get('/test', function () {
@@ -46,6 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(AssignController::class)->group(function () {
         Route::get('/assignee', 'assignee');
         Route::delete('/removeassignee', 'removeassignee');
+        Route::post('/addassignee', 'addassignee');
     });
 });
 
@@ -62,6 +59,7 @@ Route::controller(ProfileController::class)->group(function () {
         Route::get('/places', 'get_places');
         Route::patch('/places/{place_id}', 'update_place');
         Route::post('/sendinvitation', 'invitation');
+        Route::post('/invite',"show_invite");
     });
 });
 

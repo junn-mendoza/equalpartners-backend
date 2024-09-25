@@ -29,6 +29,19 @@ class PlaceService
 
     public function get_places()
     {
-        return response()->json(Place::where('user_id', Auth::id())->get(),200);
+        //return response()->json(Place::all(),200);
+
+        $authUserId = Auth::id(); // Get the authenticated user's ID
+    
+    // Query to get places the user owns or has tasks assigned to
+    $places = Place::where('user_id', $authUserId) // Places owned by the authenticated user
+        ->orWhereHas('tasks', function($query) use ($authUserId) { // Places where the user has tasks assigned
+            $query->whereHas('users', function($query) use ($authUserId) {
+                $query->where('user_id', $authUserId);
+            });
+        })
+        ->get();
+    //return response()->json(Place::all(),200);
+    return response()->json($places, 200);
     }
 }
