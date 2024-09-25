@@ -10,6 +10,7 @@ class Place extends Model
     use HasFactory;
 
     protected $fillable = [
+        
         'user_id',
         'alias',
         'name',

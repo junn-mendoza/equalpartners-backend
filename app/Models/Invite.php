@@ -9,6 +9,7 @@ class Invite extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'place_id',
         'email',
         'name',
         'user_id',

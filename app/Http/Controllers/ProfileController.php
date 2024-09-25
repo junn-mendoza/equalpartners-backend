@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Notification;
 
 class ProfileController extends Controller
 {
@@ -81,9 +82,17 @@ class ProfileController extends Controller
             [
                 'user_id' => Auth::id(),
                 'name' => $request->input('name'),
+                'place_id' => $request->input('place_id'),
+
             ]
         );
         return 'Invitation sent!';
+    }
+
+    public function show_invite(Request $request)
+    {
+         $invite = Invite::where('email',$request->input('email'))->get();
+         return response()->json($invite,200);
     }
 
     public function profile(ProfileUpdateRequest $request)

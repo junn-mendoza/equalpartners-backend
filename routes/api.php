@@ -7,6 +7,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AssignController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Resources\UserResource;
 use App\Services\TaskListingService;
 
 Route::controller(TaskController::class)->group(function () {
@@ -28,7 +29,9 @@ Route::controller(TaskController::class)->group(function () {
 });
 
 Route::get('/user', function (Request $request) {
-    return $request->user()->load('places');
+      //new UserResource(
+    return new UserResource($request->user()->load('places'));  
+    //return $request->user()->load('places');
 })->middleware('auth:sanctum');
 
 Route::get('/test', function () {
@@ -39,6 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::controller(AssignController::class)->group(function () {
         Route::get('/assignee', 'assignee');
         Route::delete('/removeassignee', 'removeassignee');
+        Route::post('/addassignee', 'addassignee');
     });
 });
 
@@ -55,6 +59,7 @@ Route::controller(ProfileController::class)->group(function () {
         Route::get('/places', 'get_places');
         Route::patch('/places/{place_id}', 'update_place');
         Route::post('/sendinvitation', 'invitation');
+        Route::post('/invite',"show_invite");
     });
 });
 

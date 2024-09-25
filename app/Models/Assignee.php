@@ -9,6 +9,7 @@ class Assignee extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'place_id',
         'user_id',
         'taskowner_id',
     ];

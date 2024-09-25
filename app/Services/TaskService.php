@@ -35,7 +35,8 @@ class TaskService
                 'min' => $data['minutes'],
                 'place_id' => $data['place_id'],
             ]);
-            TaskUser::where('task_id', $task->id)->delete();
+            //TaskUser::where('task_id', $task->id)->delete();
+            
             foreach($data['assignee'] as $assignee) {
                 TaskUser::create([
                     'task_id' => $task->id,
