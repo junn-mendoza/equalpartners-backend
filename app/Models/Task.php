@@ -18,7 +18,9 @@ class Task extends Model
     // Define many-to-many relationship with User via TaskUser
     public function users()
     {
-        return $this->belongsToMany(User::class, 'task_users')->withTimestamps();
+        return $this->belongsToMany(User::class, 'task_users')
+            ->withPivot('user_id', 'task_id','isDone')
+            ->withTimestamps();
     }
 
     public function frequencies()

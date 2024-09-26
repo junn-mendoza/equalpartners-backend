@@ -10,6 +10,20 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Resources\UserResource;
 use App\Services\TaskListingService;
 
+Route::get('/test1', function () {
+    $places = App\Models\Task::with(['users' => function ($query) {
+        $query->where('task_users.isDone', 1);  // Filter users where the task is marked as done
+    }, 'frequencies', 'categories'])
+    ->where('place_id', 1)  // Assuming you are filtering tasks by place_id
+    ->whereHas('users', function ($query) {
+        $query->where('task_users.isDone', 1);  // Ensure tasks have users with isDone = 1
+    })  // This filters out tasks with no users after the isDone = 1 filter
+    ->get();
+    
+    $tasks = new TaskListingService();    
+    return response()->json($tasks->buildAssignee($places), 200);
+});
+
 Route::controller(TaskController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/tasks', 'save_task');
@@ -22,6 +36,7 @@ Route::controller(TaskController::class)->group(function () {
                 ->get();
                 //return response()->json($places, 200);
             $tasks = new TaskListingService();
+            //return response()->json($places,200);
             $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));
             return response()->json($sorted, 200);
         });
