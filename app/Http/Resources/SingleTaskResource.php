@@ -29,6 +29,7 @@ class SingleTaskResource extends JsonResource
                         'user_id' => $taskUser->id,
                         'name' => $taskUser->name,
                         'email' => $taskUser->email,
+                        'profile' => $taskUser->profile,
                     ];
                 }),
             'repeatDates' => $this->frequencies->map(function ($frequency) {

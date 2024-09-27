@@ -35,30 +35,69 @@ class TaskService
                 'min' => $data['minutes'],
                 'place_id' => $data['place_id'],
             ]);
-            //TaskUser::where('task_id', $task->id)->delete();
-            
-            foreach($data['assignee'] as $assignee) {
-                TaskUser::create([
-                    'task_id' => $task->id,
-                    'user_id' => $assignee['user_id'],
-                ]);
+
+            // Handle TaskUser updates
+            $existingAssignees = TaskUser::where('task_id', $task->id)->pluck('user_id')->toArray();
+            $newAssignees = array_column($data['assignee'], 'user_id');
+
+            // Delete removed assignees
+            TaskUser::where('task_id', $task->id)
+                    ->whereNotIn('user_id', $newAssignees)
+                    ->delete();
+
+            // Insert new assignees
+            foreach ($data['assignee'] as $assignee) {
+                if (!in_array($assignee['user_id'], $existingAssignees)) {
+                    TaskUser::create([
+                        'task_id' => $task->id,
+                        'user_id' => $assignee['user_id'],
+                    ]);
+                }
             }
-            Frequent::where('task_id', $task->id)->delete();
-            foreach($data['repeatDates'] as $frequent) {
-                Frequent::create([
-                    'task_id' => $task->id,
-                    'frequent' => $frequent,
-                ]);
+
+            // Handle Frequent updates
+            $existingFrequents = Frequent::where('task_id', $task->id)->pluck('frequent')->toArray();
+            $newFrequents = $data['repeatDates'];
+
+            // Delete removed frequents
+            Frequent::where('task_id', $task->id)
+                    ->whereNotIn('frequent', $newFrequents)
+                    ->delete();
+
+            // Insert new frequents
+            foreach ($data['repeatDates'] as $frequent) {
+                if (!in_array($frequent, $existingFrequents)) {
+                    Frequent::create([
+                        'task_id' => $task->id,
+                        'frequent' => $frequent,
+                    ]);
+                }
             }
-            TaskCategory::where('task_id', $task->id)->delete();
-            foreach($data['selectedCategories'] as $category) {
-                TaskCategory::create([
-                    'task_id' => $task->id,
-                    'category_id' => $category['category_id'],
-                    'custom_name' => $category['name'],
-                    'color' => $category['color'],
-                ]);
+
+
+            // Handle TaskCategory updates
+            $existingCategories = TaskCategory::where('task_id', $task->id)
+            ->pluck('category_id')
+            ->toArray();
+            $newCategories = array_column($data['selectedCategories'], 'category_id');
+
+            // Delete removed categories
+            TaskCategory::where('task_id', $task->id)
+                        ->whereNotIn('category_id', $newCategories)
+                        ->delete();
+
+            // Insert new categories
+            foreach ($data['selectedCategories'] as $category) {
+                if (!in_array($category['category_id'], $existingCategories)) {
+                    TaskCategory::create([
+                        'task_id' => $task->id,
+                        'category_id' => $category['category_id'],
+                        'custom_name' => $category['name'],
+                        'color' => $category['color'],
+                    ]);
+                }
             }
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
