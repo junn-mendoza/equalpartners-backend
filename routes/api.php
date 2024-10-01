@@ -1,22 +1,24 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+use App\Services\TaskListingService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AssignController;
-use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\RewardController;
+use App\Http\Controllers\ForfeitController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Resources\UserResource;
-use App\Services\TaskListingService;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/test1', function () {
     $places = App\Models\Task::with(['users', 'frequencies', 'categories'])
-    ->where('place_id', 1)  // Assuming you are filtering tasks by place_id
-    ->get();
-     
-    $tasks = new TaskListingService();    
-    return response()->json($tasks->buildReward($places), 200);   
+        ->where('place_id', 1)  // Assuming you are filtering tasks by place_id
+        ->get();
+
+    $tasks = new TaskListingService();
+    return response()->json($tasks->buildReward($places), 200);
     return response()->json($tasks->buildAssignee($places), 200);
 });
 
@@ -30,10 +32,10 @@ Route::controller(TaskController::class)->group(function () {
             $places =  App\Models\Task::with(['users', 'frequencies', 'categories'])
                 ->where('place_id', $place_id)
                 ->get();
-                //return response()->json($places, 200);
+            //return response()->json($places, 200);
             $tasks = new TaskListingService();
             //return response()->json($places,200);
-            
+
             $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));
             return response()->json($sorted, 200);
         });
@@ -41,8 +43,8 @@ Route::controller(TaskController::class)->group(function () {
 });
 
 Route::get('/user', function (Request $request) {
-      //new UserResource(
-    return new UserResource($request->user()->load('places'));  
+    //new UserResource(
+    return new UserResource($request->user()->load('places'));
     //return $request->user()->load('places');
 })->middleware('auth:sanctum');
 
@@ -71,7 +73,7 @@ Route::controller(ProfileController::class)->group(function () {
         Route::get('/places', 'get_places');
         Route::patch('/places/{place_id}', 'update_place');
         Route::post('/sendinvitation', 'invitation');
-        Route::post('/invite',"show_invite");
+        Route::post('/invite', "show_invite");
     });
 });
 
@@ -83,5 +85,17 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/passwordchange', 'passwordchange');
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', 'logout');
+    });
+});
+
+Route::controller(RewardController::class)->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/rewards', 'add');
+    });
+});
+
+Route::controller(ForfeitController::class)->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/forfeits', 'add');
     });
 });
