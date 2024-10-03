@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Resources\RewardGetResource;
 use Exception;
 use App\Models\Reward;
 use App\Models\UserReward;
@@ -11,6 +12,14 @@ use Illuminate\Support\Facades\Log;
 
 class RewardService extends Common
 {
+    public function get($place_id)
+    {
+
+        $reward = Reward::with('user_rewards.user')->where('place_id', $place_id)
+            ->get();
+        //return response()->json($reward, 200);
+        return response()->json(RewardGetResource::collection($reward), 200);
+    }
     public function add($data)
     {
         //dd($data['place_id']);

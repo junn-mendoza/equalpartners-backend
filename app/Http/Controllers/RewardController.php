@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\RewardService;
 use App\Http\Requests\RewardAddRequest;
+use App\Http\Requests\RewardGetRequest;
 
 class RewardController extends Controller
 {
@@ -16,5 +17,10 @@ class RewardController extends Controller
     public function add(RewardAddRequest $request)
     {
         return $this->rewardService->add($request->validated());
+    }
+
+    public function get_reward($place_id)
+    {
+        return $this->rewardService->get($place_id);
     }
 }

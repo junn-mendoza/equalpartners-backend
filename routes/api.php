@@ -91,6 +91,7 @@ Route::controller(AuthController::class)->group(function () {
 Route::controller(RewardController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/rewards', 'add');
+        Route::get('/rewards/{place_id}', 'get_reward');
     });
 });
 
