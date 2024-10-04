@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\RewardService;
 use App\Http\Requests\RewardAddRequest;
+use App\Http\Requests\RewardDeleteRequest;
 use App\Http\Requests\RewardGetRequest;
 
 class RewardController extends Controller
@@ -18,9 +19,18 @@ class RewardController extends Controller
     {
         return $this->rewardService->add($request->validated());
     }
+    public function delete(RewardDeleteRequest $request)
+    {
+        return $this->rewardService->delete($request->validated());
+    }
 
     public function get_reward($place_id)
     {
         return $this->rewardService->get($place_id);
+    }
+
+    public function get_reward_id($place_id, $id)
+    {
+        return $this->rewardService->get_id($place_id, $id);
     }
 }

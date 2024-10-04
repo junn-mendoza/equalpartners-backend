@@ -2,19 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ForfeitAddRequest;
+use App\Http\Requests\ForfeitDeleteRequest;
 use Illuminate\Http\Request;
-use App\Services\RewardService;
-use App\Http\Requests\RewardAddRequest;
+use App\Services\ForfeitService;
 
 class ForfeitController extends Controller
 {
-    protected RewardService $rewardService;
-    public function __construct(RewardService $rewardService)
+    protected ForfeitService $forfeitService;
+    public function __construct(ForfeitService $forfeitService)
     {
-        $this->rewardService = $rewardService;
+        $this->forfeitService = $forfeitService;
     }
-    // public function add(RewardAddRequest $request)
-    // {
-    //     return $this->rewardService->upsert($request->validated());
-    // }
+    
+    public function add(ForfeitAddRequest $request)
+    {
+        return $this->forfeitService->add($request->validated());
+    }
+    public function delete(ForfeitDeleteRequest $request)
+    {
+        return $this->forfeitService->delete($request->validated());
+    }
+
+    public function get_forfeit($place_id)
+    {
+        return $this->forfeitService->get($place_id);
+    }
+
+    public function get_forfeit_id($place_id, $id)
+    {
+        return $this->forfeitService->get_id($place_id, $id);
+    }
+
 }

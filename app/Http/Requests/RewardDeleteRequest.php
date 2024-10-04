@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RewardAddRequest extends FormRequest
+class RewardDeleteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +22,8 @@ class RewardAddRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'assignee' => 'required|array',
-            'place_id' => 'required|integer',
-            'description' => 'required|string',
-            'id' => 'nullable|integer',
+            "place_id"=>"required|integer",
+            "id"=>"required|integer",
         ];
     }
 }

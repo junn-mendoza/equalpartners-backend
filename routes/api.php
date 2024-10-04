@@ -91,12 +91,17 @@ Route::controller(AuthController::class)->group(function () {
 Route::controller(RewardController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/rewards', 'add');
+        Route::delete('/rewards', 'delete');
         Route::get('/rewards/{place_id}', 'get_reward');
+        Route::get('/rewards/{place_id}/{reward_id}','get_reward_id');
     });
 });
 
 Route::controller(ForfeitController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/forfeits', 'add');
+        Route::delete('/forfeits', 'delete');
+        Route::get('/forfeits/{place_id}', 'get_forfeit');
+        Route::get('/forfeits/{place_id}/{forfeit_id}','get_forfeit_id');
     });
 });

@@ -12,20 +12,44 @@ use Illuminate\Support\Facades\Log;
 
 class RewardService extends Common
 {
-    public function get($place_id)
+    public function get_id($place_id, $id)
     {
 
+        $reward = Reward::with('user_rewards.user')
+            ->where('place_id', $place_id)
+            ->where('id', $id)
+            ->get();
+        //return response()->json($reward, 200);
+        return response()->json(RewardGetResource::collection($reward), 200);
+    }
+
+    public function get($place_id)
+    {
         $reward = Reward::with('user_rewards.user')->where('place_id', $place_id)
             ->get();
         //return response()->json($reward, 200);
         return response()->json(RewardGetResource::collection($reward), 200);
     }
+
+    public function delete($data)
+    {
+        Reward::where('place_id', $data['place_id'])
+            ->where('id', $data['id'])
+            ->delete();
+        return response()->json('Reward is successfully deleted.');
+    }
+
     public function add($data)
     {
         //dd($data['place_id']);
         DB::beginTransaction();
         try {
-            $reward = Reward::create([
+            $reward = Reward::updateOrCreate(
+                [
+                    'place_id' => $data['place_id'],
+                    'id' => $data['id'],
+                ],
+                [
                 'place_id' => $data['place_id'],
                 'description' => $data['description'],
             ]);

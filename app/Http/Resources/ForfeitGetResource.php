@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class RewardGetResource extends JsonResource
+class ForfeitGetResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,15 +17,16 @@ class RewardGetResource extends JsonResource
         return [
             'id' => $this->id,
             'place_id' => $this->place_id,
-            'description' => $this->description,
+            'description' => $this->must_complete,
+            'challenges' => $this->challenges,
             'created_at' => $this->created_at,
-            'users' => $this->user_rewards->map(function ($userReward) {
+            'users' => $this->user_forfeits->map(function ($userForfeit) {
                 return [
-                    'user_id' => $userReward->user->id,
-                    'name' => $userReward->user->name,
-                    'email' => $userReward->user->email,
-                    'profile' => $userReward->user->profile,
-                    'created_at' => $userReward->user->created_at,
+                    'user_id' => $userForfeit->user->id,
+                    'name' => $userForfeit->user->name,
+                    'email' => $userForfeit->user->email,
+                    'profile' => $userForfeit->user->profile,
+                    'created_at' => $userForfeit->user->created_at,
                     // Add any other user fields you want to include
                 ];
             }),
