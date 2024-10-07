@@ -5,6 +5,8 @@ namespace App\Services;
 use Exception;
 use App\Models\User;
 use App\Models\Place;
+use App\Models\Assignee;
+use App\Models\UserPlace;
 use Illuminate\Support\Facades\Auth;
 
 class PlaceService
@@ -15,11 +17,24 @@ class PlaceService
             $place = Place::create([
                 'user_id' => $data['user_id'],
                 'name' => $data['name'],
+                'alias' => $data['name'],
                 'address' => $data['address'],
             ]);
             $user = User::where('id',$data['user_id'])->first();
             $user->place_id = $place->id;
             $user->save();
+
+            UserPlace::create([
+                'user_id'=> $user->id,
+                'place_id' => $place->id,
+            ]);
+
+            Assignee::create([
+                'place_id' => $place->id,
+                'user_id'=> $user->id,
+                'taskowner_id'=> $user->id,
+
+            ]);
             return response()->json('Place added successfully.');
         } catch(Exception $e) {
             return response()->json('Module PlaceService (add) '.$e->getMessage());

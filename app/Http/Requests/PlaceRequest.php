@@ -31,7 +31,7 @@ class PlaceRequest extends FormRequest
                     return $query->where('user_id', $this->user_id);
                 })
             ],
-            'address' => 'required|string',
+            'address' => 'nullable|string',
         ];
     }
 }
