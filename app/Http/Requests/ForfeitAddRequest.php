@@ -26,6 +26,7 @@ class ForfeitAddRequest extends FormRequest
             'place_id' => 'required|integer',
             'must_complete' => 'required|string',
             'challenges' => 'required|string',
+            'id' => 'nullable|integer',
         ];
     }
 }

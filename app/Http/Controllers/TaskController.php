@@ -25,4 +25,14 @@ class TaskController extends Controller
     {
         return $this->taskService->task($request->task_id);
     }
+
+    public function taskcalendar(Request $request)
+    {
+        return $this->taskService->calendar($request->all());
+    }
+
+    public function delete_task(Request $request)
+    {
+        return $this->taskService->remove($request->input('id'));
+    }
 }

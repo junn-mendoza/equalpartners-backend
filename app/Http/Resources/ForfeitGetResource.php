@@ -17,7 +17,7 @@ class ForfeitGetResource extends JsonResource
         return [
             'id' => $this->id,
             'place_id' => $this->place_id,
-            'description' => $this->must_complete,
+            'must_complete' => $this->must_complete,
             'challenges' => $this->challenges,
             'created_at' => $this->created_at,
             'users' => $this->user_forfeits->map(function ($userForfeit) {

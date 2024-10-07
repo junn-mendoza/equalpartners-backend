@@ -17,20 +17,41 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskService
 {
-    
+
+    public function calendar($data)
+    {
+        $calendar = Task::with(['users', 'frequencies', 'categories'])
+            ->where('place_id', $data["place_id"])  // Assuming you are filtering tasks by place_id
+            ->get();
+        $tasks = new TaskListingService();
+        $newCal = $tasks->buildCalendar($calendar, $data["markedDates"], $data["users"]);
+        //return response()->json($calendar);
+        return response()->json($newCal);
+    }
+
+    public function remove($id)
+    {
+        $deletedRows = Task::where('id', $id)->delete();
+        if ($deletedRows > 0) {
+            // Records were deleted
+            return response()->json("Successfully deleted $deletedRows record(s).", 200);
+        }
+        return response()->json("No records found to delete. Task id - $id", 200);
+    }
+
     public function save($data)
     {
         DB::beginTransaction();
         try {
             $task = Task::updateOrCreate([
                 'id' => $data['task_id']
-            ],[
+            ], [
                 'name' => $data['title'],
                 'note' => $data['note'],
                 'reminder' => $data['reminder'],
                 'repeat' => $data['repeat'],
                 'timeframe' => $data['timeframe'],
-                'duedate' => $data['dueDate'],                
+                'duedate' => $data['dueDate'],
                 'hr' => $data['hours'],
                 'min' => $data['minutes'],
                 'place_id' => $data['place_id'],
@@ -42,8 +63,8 @@ class TaskService
 
             // Delete removed assignees
             TaskUser::where('task_id', $task->id)
-                    ->whereNotIn('user_id', $newAssignees)
-                    ->delete();
+                ->whereNotIn('user_id', $newAssignees)
+                ->delete();
 
             // Insert new assignees
             foreach ($data['assignee'] as $assignee) {
@@ -61,8 +82,8 @@ class TaskService
 
             // Delete removed frequents
             Frequent::where('task_id', $task->id)
-                    ->whereNotIn('frequent', $newFrequents)
-                    ->delete();
+                ->whereNotIn('frequent', $newFrequents)
+                ->delete();
 
             // Insert new frequents
             foreach ($data['repeatDates'] as $frequent) {
@@ -77,14 +98,14 @@ class TaskService
 
             // Handle TaskCategory updates
             $existingCategories = TaskCategory::where('task_id', $task->id)
-            ->pluck('category_id')
-            ->toArray();
+                ->pluck('category_id')
+                ->toArray();
             $newCategories = array_column($data['selectedCategories'], 'category_id');
 
             // Delete removed categories
             TaskCategory::where('task_id', $task->id)
-                        ->whereNotIn('category_id', $newCategories)
-                        ->delete();
+                ->whereNotIn('category_id', $newCategories)
+                ->delete();
 
             // Insert new categories
             foreach ($data['selectedCategories'] as $category) {
@@ -102,16 +123,18 @@ class TaskService
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Module (TaskService) save - " . $e->getMessage());
-            return response()->json('Something went wrong.'. $e->getMessage(),400);
+            return response()->json('Something went wrong.' . $e->getMessage(), 400);
         }
-        return response()->json('Task created.',201);;
+        return response()->json('Task created.', 201);
     }
 
     public function task($task_id)
     {
         $task = Task::with([
-                'users','frequencies','categories'
-                ])->find($task_id);
-        return response()->json(new SingleTaskResource($task),200);
+            'users',
+            'frequencies',
+            'categories'
+        ])->find($task_id);
+        return response()->json(new SingleTaskResource($task), 200);
     }
 }

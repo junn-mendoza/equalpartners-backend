@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Carbon\Carbon;
@@ -48,7 +49,7 @@ class TaskListingService
     public static function generateDateText($repeat, $timeframe, $frequencies)
     {
         $daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        
+
         $dateText = 'Every ' . self::ordinal($repeat) . ' ' . ($timeframe == 'weekly' ? 'week' : 'month');
 
         if ($timeframe === 'weekly') {
@@ -64,8 +65,8 @@ class TaskListingService
 
     private function addTaskToOutput(&$output, $task, $user, $dueDate, $header, $dataText)
     {
-        $min = ($task->min === 0?'':$task->min.($task->min>1?' mins':' min'));
-        $hr = ($task->hr === 0?'':$task->hr.($task->hr>1?' hrs ':' hr '));
+        $min = ($task->min === 0 ? '' : $task->min . ($task->min > 1 ? ' mins' : ' min'));
+        $hr = ($task->hr === 0 ? '' : $task->hr . ($task->hr > 1 ? ' hrs ' : ' hr '));
         $output[$header][] = [
             'duedate' => $dueDate->format('Y-m-d'),
             'name' => $task->name,
@@ -77,17 +78,41 @@ class TaskListingService
             'image' => $user->profile,
             'repeat' => $task->repeat,
             'data_text' => $dataText,
-            'time' => $hr.$min,
+            'time' => $hr . $min,
             'auth_id' => Auth::id(),
             'user_id' => $user->id,
             'task_id' => $task->id,
         ];
     }
 
+    private function addCalendarOutput(&$outputCalendar, $task, $user, $dueDate, $header, $dataText)
+    {
+        $min = ($task->min === 0 ? '' : $task->min . ($task->min > 1 ? ' mins' : ' min'));
+        $hr = ($task->hr === 0 ? '' : $task->hr . ($task->hr > 1 ? ' hrs ' : ' hr '));
+        $outputCalendar[] = [
+            'duedate' => $dueDate->format('Y-m-d'),
+            'name' => $task->name,
+            'id' => $task->id,
+            // 'timeframe' => $task->timeframe,
+            // 'user_name' => $user->name,
+            // 'category' => $task->categories[0]->name,
+            // 'icon' => $task->categories[0]->icon,
+            // 'color' => $task->categories[0]->color,
+            // 'image' => $user->profile,
+            // 'repeat' => $task->repeat,
+            // 'data_text' => $dataText,
+            // 'time' => $hr.$min,
+            // 'auth_id' => Auth::id(),
+            //'user_id' => $user->id,
+            // 'task_id' => $task->id,
+            //'isDone' => $user->pivot->isDone,
+        ];
+    }
+
     private function addRewardOutput(&$outputReward, $task, $user, $dueDate, $header, $dataText)
     {
-        $min = ($task->min === 0?'':$task->min.($task->min>1?' mins':' min'));
-        $hr = ($task->hr === 0?'':$task->hr.($task->hr>1?' hrs ':' hr '));
+        $min = ($task->min === 0 ? '' : $task->min . ($task->min > 1 ? ' mins' : ' min'));
+        $hr = ($task->hr === 0 ? '' : $task->hr . ($task->hr > 1 ? ' hrs ' : ' hr '));
         $outputReward[] = [
             // 'duedate' => $dueDate->format('Y-m-d'),
             // 'name' => $task->name,
@@ -102,7 +127,7 @@ class TaskListingService
             // 'time' => $hr.$min,
             // 'auth_id' => Auth::id(),
             'user_id' => $user->id,
-           // 'task_id' => $task->id,
+            // 'task_id' => $task->id,
             'isDone' => $user->pivot->isDone,
         ];
     }
@@ -125,17 +150,15 @@ class TaskListingService
             // 'time' => $hr.$min,
             // 'auth_id' => Auth::id(),
             'user_id' => $user->id,
-           // 'task_id' => $task->id,
+            // 'task_id' => $task->id,
         ];
     }
 
     // Main function to build the task list
-   private function isUser($users, $auth_id) 
-   {
-        // dump($auth_id);
-        // dd($users ?? []);
-        foreach($users ?? [] as $user) {
-            if($auth_id == $user->id) {
+    private function isUser($users, $auth_id)
+    {
+        foreach ($users ?? [] as $user) {
+            if ($auth_id == $user->id) {
                 return true;
             }
         }
@@ -147,48 +170,46 @@ class TaskListingService
         $output = [];
         $currentDate = Carbon::now()->startOfDay(); // Starting from today
         $id = Auth::id();
-        
+
         foreach ($tasks as $task) {
             $isUser = $this->isUser($task->users, $id);
             //if($isUser) {
-                foreach ($task->users as $user) {
-                    
-                    if ($task->timeframe != null) {
-                        $isFrequent = false;
-                        foreach ($task->frequencies as $frequency) {
-                            $isFrequent = true;    
-                            $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe);
-                            $dueDateCarbon = Carbon::parse($dueDate);
-                            // dump('$dueDateCarbon',$dueDateCarbon);
-                            // dump('$currentDate',$currentDate);
-                            // dd('between',$dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7)));
-                            if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
-                                
-                                $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
-                                $dataText = self::generateDateText($task->repeat, $task->timeframe, $task->frequencies->pluck('frequent')->toArray());
-                                $this->addTaskToOutput($output, $task, $user, $dueDateCarbon, $header, $dataText);
-                            }
-                        }
-                        if(!$isFrequent) {
-                            $dueDateCarbon = Carbon::parse($task->duedate);
-                            if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
-                                $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
-                                $this->addTaskToOutput($output, $task, $user, $dueDateCarbon, $header, $dataText='');
-                            }
-                        }
-                    } else {
-                        
-                        // Task has no timeframe, use the task's own due date and leave data_text blank
-                        $dueDateCarbon = Carbon::parse($task->duedate);
+            foreach ($task->users as $user) {
 
+                if ($task->timeframe != null) {
+                    $isFrequent = false;
+                    foreach ($task->frequencies as $frequency) {
+                        $isFrequent = true;
+                        $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe);
+                        $dueDateCarbon = Carbon::parse($dueDate);
+                        // dump('$dueDateCarbon',$dueDateCarbon);
+                        // dump('$currentDate',$currentDate);
+                        // dd('between',$dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7)));
                         if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
+
                             $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
-                            $this->addTaskToOutput($output, $task, $user, $dueDateCarbon, $header, '');
-                            
-                            
+                            $dataText = self::generateDateText($task->repeat, $task->timeframe, $task->frequencies->pluck('frequent')->toArray());
+                            $this->addTaskToOutput($output, $task, $user, $dueDateCarbon, $header, $dataText);
                         }
                     }
+                    if (!$isFrequent) {
+                        $dueDateCarbon = Carbon::parse($task->duedate);
+                        if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
+                            $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
+                            $this->addTaskToOutput($output, $task, $user, $dueDateCarbon, $header, $dataText = '');
+                        }
+                    }
+                } else {
+
+                    // Task has no timeframe, use the task's own due date and leave data_text blank
+                    $dueDateCarbon = Carbon::parse($task->duedate);
+
+                    if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
+                        $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
+                        $this->addTaskToOutput($output, $task, $user, $dueDateCarbon, $header, '');
+                    }
                 }
+            }
             //}
         }
         //dd();
@@ -209,46 +230,43 @@ class TaskListingService
         $outputReward = [];
         $currentDate = Carbon::now()->endOfDay(); // Starting from today
         $id = Auth::id();
-        
+
         foreach ($tasks as $task) {
             $isUser = $this->isUser($task->users, $id);
             foreach ($task->users as $user) {
-                
+
                 if ($task->timeframe != null) {
                     $isFrequent = false;
                     foreach ($task->frequencies as $frequency) {
-                        $isFrequent = true;    
+                        $isFrequent = true;
                         $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe);
                         $dueDateCarbon = Carbon::parse($dueDate);
-                        if ($dueDateCarbon->between($currentDate->copy()->subDays(7),$currentDate)) {
+                        if ($dueDateCarbon->between($currentDate->copy()->subDays(7), $currentDate)) {
                             $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
                             $dataText = self::generateDateText($task->repeat, $task->timeframe, $task->frequencies->pluck('frequent')->toArray());
                             $this->addRewardOutput($outputReward, $task, $user, $dueDateCarbon, $header, $dataText);
                         }
                     }
-                    if(!$isFrequent) {
+                    if (!$isFrequent) {
                         $dueDateCarbon = Carbon::parse($task->duedate);
-                        if ($dueDateCarbon->between($currentDate->copy()->subDays(7),$currentDate)) {
+                        if ($dueDateCarbon->between($currentDate->copy()->subDays(7), $currentDate)) {
                             $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
-                            $this->addRewardOutput($outputReward, $task, $user, $dueDateCarbon, $header, $dataText='');
+                            $this->addRewardOutput($outputReward, $task, $user, $dueDateCarbon, $header, $dataText = '');
                         }
                     }
                 } else {
-                    
+
                     // Task has no timeframe, use the task's own due date and leave data_text blank
                     $dueDateCarbon = Carbon::parse($task->duedate);
 
                     if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
                         $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
                         $this->addRewardOutput($outputReward, $task, $user, $dueDateCarbon, $header, '');
-                        
-                        
                     }
                 }
             }
-            
         }
-     
+
         // Add "No tasks available" message for empty days
         // for ($i = 0; $i <= 7; $i++) {
         //     $date = $currentDate->copy()->addDays($i);
@@ -260,34 +278,100 @@ class TaskListingService
 
         return $outputReward;
     }
-    
+
+    public function buildCalendar($tasks, $markedDates, $users)
+    {
+        $outputCalendar = [];
+        $currentDate = Carbon::now()->endOfDay(); // Starting from today
+
+        foreach ($tasks as $task) {
+            foreach ($task->users as $user) {
+                // Check if the user is in the allowed users array
+                //dd(in_array($user->id, $users));
+                if (empty($users) || in_array($user->id, $users)) {
+                    if ($task->timeframe != null) {
+                        $isFrequent = false;
+                        foreach ($task->frequencies as $frequency) {
+                            $isFrequent = true;
+                            $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe);
+                            $dueDateCarbon = Carbon::parse($dueDate);
+
+                            // Check if $dueDateCarbon is in $markedDate array
+                            if (in_array($dueDateCarbon->toDateString(), $markedDates)) {
+                                $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
+                                $dataText = self::generateDateText($task->repeat, $task->timeframe, $task->frequencies->pluck('frequent')->toArray());
+                                $this->addCalendarOutput($outputCalendar, $task, $user, $dueDateCarbon, $header, $dataText);
+                            }
+                        }
+
+                        if (!$isFrequent) {
+                            // dump('pasok');
+                            $dueDateCarbon = Carbon::parse($task->duedate);
+                            // dump($dueDateCarbon->toDateString());
+                            //  dd(in_array($dueDateCarbon->toDateString(), $markedDate));
+                            // Check if $dueDateCarbon is in $markedDate array
+                            if (in_array($dueDateCarbon->toDateString(), $markedDates)) {
+                                $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
+                                $this->addCalendarOutput($outputCalendar, $task, $user, $dueDateCarbon, $header, $dataText = '');
+                            }
+                        }
+                    } else {
+                        // Task has no timeframe, use the task's own due date and leave data_text blank
+                        $dueDateCarbon = Carbon::parse($task->duedate);
+                        //dd($dueDateCarbon);
+                        // Check if $dueDateCarbon is in $markedDate array
+                        if (in_array($dueDateCarbon->toDateString(), $markedDates)) {
+                            $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
+                            $this->addCalendarOutput($outputCalendar, $task, $user, $dueDateCarbon, $header, '');
+                        }
+                    }
+                }
+            }
+        }
+
+        // Remove duplicate entries before returning
+        $uniqueOutputCalendar = array_map(
+            'unserialize',
+            array_unique(
+                array_map('serialize', $outputCalendar)
+            )
+        );
+
+        // Re-index the array to remove associative keys and return a standard array
+        $indexedOutputCalendar = array_values($uniqueOutputCalendar);
+
+        return $indexedOutputCalendar;
+        //return $uniqueOutputCalendar;
+    }
+
+
     public function buildAssignee($tasks)
     {
         $output2 = [];
         $currentDate = Carbon::now()->startOfDay(); // Starting from today
         //$id = Auth::id();
-        
+
         foreach ($tasks as $task) {
             //$isUser = $this->isUser($task->users, $id);
             foreach ($task->users as $user) {
                 if ($task->timeframe != null) {
                     $isFrequent = false;
                     foreach ($task->frequencies as $frequency) {
-                        $isFrequent = true;    
+                        $isFrequent = true;
                         $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe);
                         $dueDateCarbon = Carbon::parse($dueDate);
                         if ($dueDateCarbon->isToday()) {
                             $this->addAssigneeOutput($output2,  $user);
                         }
                     }
-                    if(!$isFrequent) {
+                    if (!$isFrequent) {
                         $dueDateCarbon = Carbon::parse($task->duedate);
                         if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
                             $this->addAssigneeOutput($output2, $user);
                         }
                     }
                 } else {
-                    
+
                     // Task has no timeframe, use the task's own due date and leave data_text blank
                     $dueDateCarbon = Carbon::parse($task->duedate);
 
@@ -296,12 +380,11 @@ class TaskListingService
                     }
                 }
             }
-            
         }
         $num = count($output2);
 
-        for($i=0; $i<$num; $i++){
-            $output2[$i]['percentage'] = 1/$num;
+        for ($i = 0; $i < $num; $i++) {
+            $output2[$i]['percentage'] = 1 / $num;
         }
 
         return $output2;
@@ -344,5 +427,4 @@ class TaskListingService
 
         return $finalOutput;
     }
-
 }

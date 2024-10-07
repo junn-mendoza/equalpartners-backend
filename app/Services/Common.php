@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\DB;
 
 class Common
 {
-    public function addAssignee($model, $data, $id)
+    public function addAssignee($model, $data, $id, $where_id = "reward")
     {
         // Fetch existing assignees from the model by reward_id
-        $existingAssignees = $model::where('reward_id', $id)->pluck('user_id')->toArray();
+        $existingAssignees = $model::where($where_id . '_id', $id)->pluck('user_id')->toArray();
 
         // Assignees in the request
         $newAssignees = $data['assignee'];
@@ -27,7 +27,7 @@ class Common
         // Add valid new assignees
         foreach ($assigneesToAdd as $assignee) {
             $model::create([
-                'reward_id' => $id,
+                $where_id . '_id' => $id,
                 'user_id' => $assignee,
             ]);
         }
@@ -35,8 +35,8 @@ class Common
         // Remove assignees that no longer exist
         if (!empty($assigneesToRemove)) {
             $model::where('reward_id', $id)
-                  ->whereIn('user_id', $assigneesToRemove)
-                  ->delete();
+                ->whereIn('user_id', $assigneesToRemove)
+                ->delete();
         }
     }
 }

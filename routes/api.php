@@ -39,6 +39,9 @@ Route::controller(TaskController::class)->group(function () {
             $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));
             return response()->json($sorted, 200);
         });
+
+        Route::post('/taskcalendar', 'taskcalendar');
+        Route::delete('/tasks', 'delete_task');
     });
 });
 
@@ -93,7 +96,7 @@ Route::controller(RewardController::class)->group(function () {
         Route::post('/rewards', 'add');
         Route::delete('/rewards', 'delete');
         Route::get('/rewards/{place_id}', 'get_reward');
-        Route::get('/rewards/{place_id}/{reward_id}','get_reward_id');
+        Route::get('/rewards/{place_id}/{reward_id}', 'get_reward_id');
     });
 });
 
@@ -102,6 +105,17 @@ Route::controller(ForfeitController::class)->group(function () {
         Route::post('/forfeits', 'add');
         Route::delete('/forfeits', 'delete');
         Route::get('/forfeits/{place_id}', 'get_forfeit');
-        Route::get('/forfeits/{place_id}/{forfeit_id}','get_forfeit_id');
+        Route::get('/forfeits/{place_id}/{forfeit_id}', 'get_forfeit_id');
     });
 });
+
+
+// Route::get('/test1', function () {
+//     $calendar = App\Models\Task::with(['users', 'frequencies', 'categories'])
+//         ->where('place_id', 1)  // Assuming you are filtering tasks by place_id
+//         ->get();
+//     $tasks = new TaskListingService();
+//     $newCal = $tasks->buildCalendar($calendar);
+//     //return response()->json($calendar);
+//     return response()->json($newCal);
+// });

@@ -47,6 +47,7 @@ class ForfeitService extends Common
 
     public function add($data)
     {
+        //dd($data);
         DB::beginTransaction();
         try {
             $forfeit = Forfeit::updateOrCreate(
@@ -55,11 +56,12 @@ class ForfeitService extends Common
                     'id' => $data['id'],
                 ],
                 [
-                'place_id' => $data['place_id'],
-                'must_complete' => $data['must_complete'],
-                'challenges' => $data['challenges'],
-            ]);
-            $this->addAssignee(UserForfeit::class, $data, $forfeit->id);
+                    'place_id' => $data['place_id'],
+                    'must_complete' => $data['must_complete'],
+                    'challenges' => $data['challenges'],
+                ]
+            );
+            $this->addAssignee(UserForfeit::class, $data, $forfeit->id, "forfeit");
 
             DB::commit();
         } catch (Exception $e) {
@@ -94,5 +96,4 @@ class ForfeitService extends Common
             ->get();
         return response()->json(ForfeitGetResource::collection($forfeit), 200);
     }
-
 }

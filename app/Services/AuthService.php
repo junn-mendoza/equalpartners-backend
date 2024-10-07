@@ -81,7 +81,7 @@ class AuthService
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
-                'place_id'=> 1,
+                'place_id' => 1,
             ]);
 
             $place = Place::create([
@@ -90,14 +90,14 @@ class AuthService
                 'name' => 'My home',
                 'address' => null,
             ]);
-            
-            
+
+
             $user->place_id = $place->id; //default
             $user->save();
 
             Log::info('Creating Assignee with place_id: ' . $place->id);
             Assignee::create([
-                'place_id'=> 1,
+                'place_id' => $place->id,
                 'user_id' => $user->id,
                 'taskowner_id' => $user->id,
             ]);
@@ -110,7 +110,7 @@ class AuthService
             //     now(),
             // ]);
 
-           
+
             UserPlace::create([
                 'place_id' => $place->id,
                 'user_id' =>  $user->id,
@@ -128,7 +128,7 @@ class AuthService
                     'message' => $invite->name . ' accepted your invitation.',
                 ]);
                 Assignee::create([
-                    'place_id'=> $place->id,
+                    'place_id' => $place->id,
                     'user_id' => $user->id,
                     'taskowner_id' => $invite->user_id,
                 ]);
