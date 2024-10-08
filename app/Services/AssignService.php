@@ -30,24 +30,26 @@ class AssignService
 
         // Fetch tasks where isDone = 1 for users in the same place
         $places = Task::with(['users' => function ($query) {
-            $query->where('task_users.isDone', 1);  // Filter users where the task is marked as done
+           // $query->where('task_users.isDone', 1);  // Filter users where the task is marked as done
             }, 'frequencies', 'categories'])
-            ->where('place_id', 1)  // Assuming you are filtering tasks by place_id
+            ->where('place_id', $user->place_id)  // Assuming you are filtering tasks by place_id
             ->whereHas('users', function ($query) {
-                $query->where('task_users.isDone', 1);  // Ensure tasks have users with isDone = 1
+                //$query->where('task_users.isDone', 1);  // Ensure tasks have users with isDone = 1
             })
             ->get();
-
+        $taskCount = count($places);    
+        //return response()->json($assignees);
         $tmpRewards = Task::with(['users', 'frequencies', 'categories'])
-            ->where('place_id', 1)  // Assuming you are filtering tasks by place_id
+            ->where('place_id', $user->place_id)  // Assuming you are filtering tasks by place_id
             ->get();
 
         
         
         $tasks = new TaskListingService();    
         $percentages = $tasks->buildAssignee($places); // This is your $percentage data
+        //return response()->json($percentages);
         $rewards = $tasks->buildReward($tmpRewards);
-
+            
         // Group rewards by user_id for easier lookup
         $groupedRewards = collect($rewards)->groupBy('user_id')->map(function ($rewardsForUser) {
             $totalTasks = count($rewardsForUser);  // Total number of tasks
@@ -57,27 +59,31 @@ class AssignService
         });
         // Initialize an empty array to store the final result
         $finalAssignees = [];
+        $isReward = false;
+        foreach($percentages as $percentage) {
+            if(isset($percentage['reward'])) {
+                $isReward = true;
+            }
+        }
 
-        // Loop through the assignees and match the percentage from the $percentages array
-        // foreach ($assignees as $assignee) {
-        //     // Find the corresponding percentage for the current user
-        //     $percentageData = collect($percentages)->firstWhere('user_id', $assignee['user_id']);
-
-        //     // If percentage is found, use it; otherwise default to 0
-        //     $percentage = $percentageData['percentage'] ?? 0;
-
-        //     // Add the percentage to the assignee data
-        //     $finalAssignees[] = array_merge($assignee, ['percentage' => $percentage]);
-        // }
-
+        
+        //dd($reward_percentage!=0);
         // Loop through the assignees and match the percentage and reward from $percentages and $groupedRewards
+        $reward_percentage = (isset($percentages['reward'])?0: 1/count($assignees));
         foreach ($assignees as $assignee) {
             // Find the corresponding percentage for the current user
             $percentageData = collect($percentages)->firstWhere('user_id', $assignee['user_id']);
+            //dd($percentageData);
             $percentage = $percentageData['percentage'] ?? 0;  // If percentage is found, use it; otherwise default to 0
-            
+            if(!$isReward) {
+                //dd(1);
+                $reward = 1/count($assignees); 
+            } else {
+                //dd(345);
+                $reward = $groupedRewards[$assignee['user_id']] ?? 0;    
+            }
             // Find the corresponding reward for the current user
-            $reward = $groupedRewards[$assignee['user_id']] ?? 0;  // If reward is found, use it; otherwise default to 0
+            //$reward = $groupedRewards[$assignee['user_id']] ?? $reward_percentage;  // If reward is found, use it; otherwise default to 0
 
             // Add the percentage and reward to the assignee data
             $finalAssignees[] = array_merge($assignee, [
@@ -85,6 +91,17 @@ class AssignService
                 'reward' => $reward  // Reward is already a percentage (e.g., 0.5 for 50%)
             ]);
         }
+
+        if(count($rewards) === 0 ) {
+            $total = count($assignees);
+            $tmp = [];
+            foreach($finalAssignees as $finalAssignee) {
+                $finalAssignee['reward'] = 1/$total;
+                $tmp[] = $finalAssignee;
+            }
+            $finalAssignees = $tmp;
+        }
+        
         // Return the final result as JSON
         return response()->json($finalAssignees, 200);
         //return response()->json(AssigneeResource::collection($finalAssignees), 200);

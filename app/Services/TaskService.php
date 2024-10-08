@@ -22,7 +22,8 @@ class TaskService
     {
         $calendar = Task::with(['users', 'frequencies', 'categories'])
             ->where('place_id', $data["place_id"])  // Assuming you are filtering tasks by place_id
-            ->get();
+            ->orderBy('duedate')
+            ->get();            
         $tasks = new TaskListingService();
         $newCal = $tasks->buildCalendar($calendar, $data["markedDates"], $data["users"]);
         //return response()->json($calendar);

@@ -133,8 +133,9 @@ class TaskListingService
         ];
     }
     // Helper function to add a task to the output array
-    private function addAssigneeOutput(&$output2, $user)
+    private function addAssigneeOutput(&$output2, $user, $task)
     {
+        //dd($user);
         // $min = ($task->min === 0?'':$task->min.($task->min>1?' mins':' min'));
         // $hr = ($task->hr === 0?'':$task->hr.($task->hr>1?' hrs ':' hr '));
         $output2[] = [
@@ -151,6 +152,9 @@ class TaskListingService
             // 'time' => $hr.$min,
             // 'auth_id' => Auth::id(),
             'user_id' => $user->id,
+            'isDone' => $user->pivot->isDone,
+            'task' => $task->id,
+            
             // 'task_id' => $task->id,
         ];
     }
@@ -352,7 +356,6 @@ class TaskListingService
         $output2 = [];
         $currentDate = Carbon::now()->startOfDay(); // Starting from today
         //$id = Auth::id();
-
         foreach ($tasks as $task) {
             //$isUser = $this->isUser($task->users, $id);
             foreach ($task->users as $user) {
@@ -363,13 +366,13 @@ class TaskListingService
                         $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe);
                         $dueDateCarbon = Carbon::parse($dueDate);
                         if ($dueDateCarbon->isToday()) {
-                            $this->addAssigneeOutput($output2,  $user);
+                            $this->addAssigneeOutput($output2,  $user, $task);
                         }
                     }
                     if (!$isFrequent) {
                         $dueDateCarbon = Carbon::parse($task->duedate);
-                        if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
-                            $this->addAssigneeOutput($output2, $user);
+                        if ($dueDateCarbon->isToday()) {
+                            $this->addAssigneeOutput($output2, $user, $task);
                         }
                     }
                 } else {
@@ -378,17 +381,36 @@ class TaskListingService
                     $dueDateCarbon = Carbon::parse($task->duedate);
 
                     if ($dueDateCarbon->isToday()) {
-                        $this->addAssigneeOutput($output2, $user);
+                        $this->addAssigneeOutput($output2, $user, $task);
                     }
                 }
             }
         }
         $num = count($output2);
-
+        $countdone = 0;
         for ($i = 0; $i < $num; $i++) {
-            $output2[$i]['percentage'] = 1 / $num;
+            if($output2[$i]['isDone'] == 1){
+                $countdone++;
+                $output2[$i]['percentage'] = 1 / $num;    
+            } else {
+                $output2[$i]['percentage'] = 0;
+            }
         }
+        //$isReward = false;
+        for ($i = 0; $i < $num; $i++) {
+            if($output2[$i]['isDone'] == 1){
+                //$isReward = true;
+                $output2[$i]['reward'] = 1 / $countdone;    
+            }
+        }
+        // if(!$isReward) {
+        //     for ($i = 0; $i < $num; $i++) {
+        //         $output2[$i]['reward'] = 1/$num;
+        //     }
+        // }
 
+
+        
         return $output2;
     }
 
