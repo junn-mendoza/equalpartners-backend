@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use Carbon\Carbon;
@@ -47,7 +48,7 @@ class TaskListingService
     public static function generateDateText($repeat, $timeframe, $frequencies)
     {
         $daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        
+
         $dateText = 'Every ' . self::ordinal($repeat) . ' ' . ($timeframe == 'weekly' ? 'week' : 'month');
 
         if ($timeframe === 'weekly') {
@@ -74,13 +75,15 @@ class TaskListingService
             'color' => $task->categories[0]->color,
             'image' => $user->profile,
             'repeat' => $task->repeat,
-            'data_text' => $dataText
+            'data_text' => $dataText,
+            'isDone' => $user->isDone,
         ];
     }
 
     // Main function to build the task list
     public function buildTask($tasks)
     {
+        dd($tasks);
         $output = [];
         $currentDate = Carbon::now(); // Starting from today
 

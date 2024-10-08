@@ -137,4 +137,17 @@ class TaskService
         ])->find($task_id);
         return response()->json(new SingleTaskResource($task), 200);
     }
+
+    public function done($data)
+    {
+        $id = Auth::id();
+        $task = TaskUser::where('task_id', $data['task_id'])
+            ->where('user_id', $id)->first();
+        if ($task) {
+            $task->isDone = 1;
+            $task->save();
+            return response()->json('task is updated.', 200);
+        }
+        return response()->json('You\'re not own the task.', 200);
+    }
 }

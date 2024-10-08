@@ -25,6 +25,7 @@ Route::get('/test1', function () {
 Route::controller(TaskController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/tasks', 'save_task');
+        Route::post('/isdone', 'isdone');
         // Route::get('/tasks/{place_id}', 'get_tasks');
         Route::get('/task/{task_id}', 'get_task');
 
@@ -74,6 +75,7 @@ Route::controller(ProfileController::class)->group(function () {
         Route::post('/homeaddress', 'homeaddress');
         Route::post('/places', 'places');
         Route::get('/places', 'get_places');
+        Route::get('/placeuse/{place_id}/{user_id}', 'place_use');
         Route::patch('/places/{place_id}', 'update_place');
         Route::post('/sendinvitation', 'invitation');
         Route::post('/invite', "show_invite");

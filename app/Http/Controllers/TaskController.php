@@ -21,6 +21,10 @@ class TaskController extends Controller
     {
         return $this->taskService->task($task_id);
     }
+    public function isdone(Request $request)
+    {
+        return $this->taskService->done($request->all());
+    }
     public function get_task(Request $request)
     {
         return $this->taskService->task($request->task_id);

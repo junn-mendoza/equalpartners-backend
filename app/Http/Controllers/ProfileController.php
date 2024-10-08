@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Place;
 use App\Models\Invite;
 use App\Mail\invitation;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Services\PlaceService;
@@ -14,7 +16,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\Notification;
 
 class ProfileController extends Controller
 {
@@ -22,11 +23,10 @@ class ProfileController extends Controller
     protected ImageDataService $imageDataService;
     protected PlaceService $placeService;
     public function __construct(
-        UserService $userService, 
+        UserService $userService,
         ImageDataService $imageDataService,
         PlaceService $placeService
-        )
-    {
+    ) {
         $this->userService = $userService;
         $this->imageDataService = $imageDataService;
         $this->placeService = $placeService;
@@ -37,6 +37,11 @@ class ProfileController extends Controller
         return $this->placeService->add($request->validated());
     }
 
+    public function place_use($place_id, $user_id)
+    {
+        $place = Place::where('id', $place_id)->first();
+        return response()->json($place->user_id != $user_id ? $place->alias : $place->name, 200);
+    }
     public function get_places()
     {
         return $this->placeService->get_places();
@@ -91,8 +96,8 @@ class ProfileController extends Controller
 
     public function show_invite(Request $request)
     {
-         $invite = Invite::where('email',$request->input('email'))->get();
-         return response()->json($invite,200);
+        $invite = Invite::where('email', $request->input('email'))->get();
+        return response()->json($invite, 200);
     }
 
     public function profile(ProfileUpdateRequest $request)

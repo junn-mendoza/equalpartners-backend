@@ -82,6 +82,7 @@ class TaskResource extends JsonResource
                             'name' => $taskUser->user->name,
                             'email' => $taskUser->user->email,
                             'profile' => $taskUser->user->profile,
+                            'isDOne' => $taskUser->isDone,
                         ];
                     }),
                     'frequencies' => $this->frequencies->map(function ($frequency) {

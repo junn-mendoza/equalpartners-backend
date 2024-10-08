@@ -82,6 +82,7 @@ class TaskListingService
             'auth_id' => Auth::id(),
             'user_id' => $user->id,
             'task_id' => $task->id,
+            'isDone'  => $user->pivot->isDone,
         ];
     }
 
@@ -167,15 +168,16 @@ class TaskListingService
 
     public function buildTask($tasks)
     {
+        //dd($tasks);
         $output = [];
         $currentDate = Carbon::now()->startOfDay(); // Starting from today
         $id = Auth::id();
 
         foreach ($tasks as $task) {
             $isUser = $this->isUser($task->users, $id);
-            //if($isUser) {
-            foreach ($task->users as $user) {
 
+            foreach ($task->users as $user) {
+                //dd($user->pivot->isDone);
                 if ($task->timeframe != null) {
                     $isFrequent = false;
                     foreach ($task->frequencies as $frequency) {

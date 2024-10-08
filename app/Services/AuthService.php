@@ -127,11 +127,26 @@ class AuthService
                     'user_id' => $invite->user_id,
                     'message' => $invite->name . ' accepted your invitation.',
                 ]);
-                Assignee::create([
-                    'place_id' => $place->id,
-                    'user_id' => $user->id,
-                    'taskowner_id' => $invite->user_id,
-                ]);
+                $create = [
+                    [
+                        'place_id' => $invite->place_id,
+                        'user_id' => $user->id,
+                        'taskowner_id' => $invite->user_id,
+                    ],
+                    [
+                        'place_id' => $invite->place_id,
+                        'user_id' => $invite->user_id,
+                        'taskowner_id' => $user->id,
+                    ],
+                    [
+                        'place_id' => $invite->place_id,
+                        'user_id' => $user->id,
+                        'taskowner_id' => $user->id,
+                    ]
+                ];
+                foreach ($create as $row) {
+                    Assignee::create($row);
+                }
                 $invite->delete();
             }
             Auth::login($user);
