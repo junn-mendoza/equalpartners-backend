@@ -17,18 +17,22 @@ class TaskController extends Controller
     {
         return $this->taskService->save($request->validated());
     }
-    public function get_tasks($task_id)
-    {
-        return $this->taskService->task($task_id);
-    }
-    public function isdone(Request $request)
-    {
-        return $this->taskService->done($request->all());
-    }
+
     public function get_task(Request $request)
     {
         return $this->taskService->task($request->task_id);
     }
+
+    public function get_tasks($task_id)
+    {
+        return $this->taskService->task($task_id);
+    }
+    
+    public function isdone(Request $request)
+    {
+        return $this->taskService->done($request->all());
+    }
+    
 
     public function taskcalendar(Request $request)
     {
@@ -38,5 +42,9 @@ class TaskController extends Controller
     public function delete_task(Request $request)
     {
         return $this->taskService->remove($request->input('id'));
+    }
+    public function task_filter(Request $request)
+    {
+        return $this->taskService->filter($request->all());
     }
 }

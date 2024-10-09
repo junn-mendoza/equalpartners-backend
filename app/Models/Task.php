@@ -39,4 +39,31 @@ class Task extends Model
     {
         return $this->belongsTo(Place::class);
     }
+
+    /**
+     * Scope to filter by assignees and categories if provided.
+     */
+    public function scopeFilter($query, $data)
+    {
+        // Filter by place_id
+        if (!empty($data['place_id'])) {
+            $query->where('place_id', $data['place_id']);
+        }
+
+        // Apply assignee filter if provided
+        if (!empty($data['assignee'])) {
+            $query->whereHas('users', function ($query) use ($data) {
+                $query->whereIn('users.id', $data['assignee']);
+            });
+        }
+
+        // Apply category filter if provided
+        if (!empty($data['categories'])) {
+            $query->whereHas('categories', function ($query) use ($data) {
+                $query->whereIn('categories.id', $data['categories']);
+            });
+        }
+
+        return $query;
+    }
 }

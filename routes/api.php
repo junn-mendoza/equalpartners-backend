@@ -12,21 +12,15 @@ use App\Http\Controllers\ForfeitController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
 
-Route::get('/test1', function () {
-    $places = App\Models\Task::with(['users', 'frequencies', 'categories'])
-        ->where('place_id', 1)  // Assuming you are filtering tasks by place_id
-        ->get();
-
-    $tasks = new TaskListingService();
-    return response()->json($tasks->buildReward($places), 200);
-    return response()->json($tasks->buildAssignee($places), 200);
+Route::get('/testprod', function () {
+    return response()->json('test only');
 });
 
 Route::controller(TaskController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/tasks', 'save_task');
         Route::post('/isdone', 'isdone');
-        // Route::get('/tasks/{place_id}', 'get_tasks');
+        Route::post('/taskfilter', 'task_filter');
         Route::get('/task/{task_id}', 'get_task');
 
         Route::get('/tasks/{place_id}', function ($place_id) {

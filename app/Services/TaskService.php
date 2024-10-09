@@ -151,4 +151,29 @@ class TaskService
         }
         return response()->json('You\'re not own the task.', 200);
     }
+
+    public function filter($data)
+    {
+
+        $places = Task::with([
+            'frequencies', 
+            'categories'=> function ($query) use ($data) {
+                if (!empty($data['categories'])) {
+                    $query->whereIn('categories.id', $data['categories']);
+                }
+            }, 
+            'users' => function ($query) use ($data) {
+                if (!empty($data['assignee'])) {
+                    $query->whereIn('users.id', $data['assignee']);
+                }
+            }
+        ])
+        ->filter($data)  // Apply the custom filter scope
+        ->get();
+
+        $tasks = new TaskListingService();
+
+        $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));
+        return response()->json($sorted, 200);
+    }
 }
