@@ -7,6 +7,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/test', function () {
+    echo 'test';
+});
+
+
 Route::get('/success', function () {
     return view('changesuccess');
 });
