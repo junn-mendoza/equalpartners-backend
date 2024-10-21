@@ -23,7 +23,7 @@ class TaskService
         $calendar = Task::with(['users', 'frequencies', 'categories'])
             ->where('place_id', $data["place_id"])  // Assuming you are filtering tasks by place_id
             ->orderBy('duedate')
-            ->get();            
+            ->get();
         $tasks = new TaskListingService();
         $newCal = $tasks->buildCalendar($calendar, $data["markedDates"], $data["users"]);
         //return response()->json($calendar);
@@ -156,21 +156,20 @@ class TaskService
     {
 
         $places = Task::with([
-            'frequencies', 
-            'categories'=> function ($query) use ($data) {
+            'frequencies',
+            'categories' => function ($query) use ($data) {
                 if (!empty($data['categories'])) {
                     $query->whereIn('categories.id', $data['categories']);
                 }
-            }, 
+            },
             'users' => function ($query) use ($data) {
                 if (!empty($data['assignee'])) {
                     $query->whereIn('users.id', $data['assignee']);
                 }
             }
         ])
-        ->filter($data)  // Apply the custom filter scope
-        ->get();
-
+            ->filter($data)  // Apply the custom filter scope
+            ->get();
         $tasks = new TaskListingService();
 
         $sorted = $tasks->sortTasksByDate($tasks->buildTask($places));

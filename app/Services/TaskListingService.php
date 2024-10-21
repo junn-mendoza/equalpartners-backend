@@ -20,22 +20,79 @@ class TaskListingService
     }
 
     // Calculates the due date based on the frequency and timeframe
-    public static function calculateDueDate($frequency, $timeframe)
+    public static function calculateDueDate2($frequency, $timeframe, int $repeat)
     {
+
         $currentDate = Carbon::now(); // Get the current date
 
+        // dump($currentDate->startOfWeek(Carbon::SUNDAY)->addDays($frequency));
+        // dd($frequency);
+
+
         if ($timeframe === 'weekly') {
-            // Get the start of the current week (Sunday) and add frequency days
-            return $currentDate->startOfWeek(Carbon::SUNDAY)->addDays($frequency);
+            // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+            $currentDayOfWeek = $currentDate->dayOfWeek;
+
+            // If today is the target day and repeat is 1, return today
+            if ($currentDayOfWeek == $frequency && $repeat == 1) {
+                return $currentDate;
+            }
+
+            // Calculate how many days until the target day of this week
+            $daysUntilTargetDay = ($frequency >= $currentDayOfWeek)
+                ? $frequency - $currentDayOfWeek
+                : 7 - ($currentDayOfWeek - $frequency);
+
+            // Get the next occurrence of the target day in this week
+            $targetDay = $currentDate->addDays($daysUntilTargetDay);
+
+            // Adjust for repeat (e.g., 2nd Sunday, 3rd Monday)
+            if ($repeat > 1) {
+                $targetDay->addWeeks($repeat - 1);
+            }
+
+            return $targetDay;
         } elseif ($timeframe === 'monthly') {
             // Ensure the frequency is within the valid range for monthly (1-31)
-            $frequency = max(1, min(31, $frequency));
+            $frequency = max(1, min(28, $frequency));
             return Carbon::createFromDate($currentDate->year, $currentDate->month, $frequency);
         }
 
         throw new \Exception('Invalid timeframe');
     }
 
+    public static function calculateDueDate($frequency, $timeframe, int $repeat, $start)
+    {
+
+        // Clone the start date to avoid mutating the original date
+        $currentDate = $start->copy();
+
+        if ($timeframe === 'weekly') {
+            // Get the current day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+            $currentDayOfWeek = $currentDate->dayOfWeek;
+
+            // Calculate how many days until the target day of this week
+            $daysUntilTargetDay = ($frequency >= $currentDayOfWeek)
+                ? $frequency - $currentDayOfWeek
+                : 7 - ($currentDayOfWeek - $frequency);
+
+            // Move to the next target day within the same week
+            $targetDay = $currentDate->addDays($daysUntilTargetDay);
+
+            // Adjust for repeat (e.g., if repeat = 2, it should add 2 weeks interval)
+            if ($repeat > 1) {
+                $targetDay->addWeeks($repeat - 1);
+            }
+
+            return $targetDay;
+        } elseif ($timeframe === 'monthly') {
+            // Ensure the frequency is within a valid range for monthly (1-28)
+            $frequency = max(1, min(28, $frequency));
+            return Carbon::createFromDate($currentDate->year, $currentDate->month, $frequency);
+        }
+
+        throw new \Exception('Invalid timeframe');
+    }
     // Helper function to generate ordinal numbers (1st, 2nd, 3rd, etc.)
     public static function ordinal($number)
     {
@@ -50,7 +107,7 @@ class TaskListingService
     {
         $daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        $dateText = 'Every ' . self::ordinal($repeat) . ' ' . ($timeframe == 'weekly' ? 'week' : 'month');
+        $dateText = 'Every ' .  ($timeframe == 'weekly' ? '' : self::ordinal($repeat) . ' ') . ($timeframe == 'weekly' ? 'week' : 'month');
 
         if ($timeframe === 'weekly') {
             $days = array_map(fn($frequency) => $daysOfWeek[$frequency], $frequencies);
@@ -154,7 +211,7 @@ class TaskListingService
             'user_id' => $user->id,
             'isDone' => $user->pivot->isDone,
             'task' => $task->id,
-            
+
             // 'task_id' => $task->id,
         ];
     }
@@ -184,20 +241,19 @@ class TaskListingService
                 //dd($user->pivot->isDone);
                 if ($task->timeframe != null) {
                     $isFrequent = false;
+                    //dd(count($task->frequencies));
                     foreach ($task->frequencies as $frequency) {
                         $isFrequent = true;
-                        $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe);
+                        $dueDate = self::calculateDueDate($frequency->frequent, $task->timeframe, $task->repeat, $task->created_at);
                         $dueDateCarbon = Carbon::parse($dueDate);
-                        // dump('$dueDateCarbon',$dueDateCarbon);
-                        // dump('$currentDate',$currentDate);
-                        // dd('between',$dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7)));
-                        if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
 
+                        if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
                             $header = self::getHeaderForDate($dueDateCarbon, $currentDate);
                             $dataText = self::generateDateText($task->repeat, $task->timeframe, $task->frequencies->pluck('frequent')->toArray());
                             $this->addTaskToOutput($output, $task, $user, $dueDateCarbon, $header, $dataText);
                         }
                     }
+                    //dd(1);
                     if (!$isFrequent) {
                         $dueDateCarbon = Carbon::parse($task->duedate);
                         if ($dueDateCarbon->between($currentDate, $currentDate->copy()->addDays(7))) {
@@ -389,18 +445,18 @@ class TaskListingService
         $num = count($output2);
         $countdone = 0;
         for ($i = 0; $i < $num; $i++) {
-            if($output2[$i]['isDone'] == 1){
+            if ($output2[$i]['isDone'] == 1) {
                 $countdone++;
-                $output2[$i]['percentage'] = 1 / $num;    
+                $output2[$i]['percentage'] = 1 / $num;
             } else {
                 $output2[$i]['percentage'] = 0;
             }
         }
         //$isReward = false;
         for ($i = 0; $i < $num; $i++) {
-            if($output2[$i]['isDone'] == 1){
+            if ($output2[$i]['isDone'] == 1) {
                 //$isReward = true;
-                $output2[$i]['reward'] = 1 / $countdone;    
+                $output2[$i]['reward'] = 1 / $countdone;
             }
         }
         // if(!$isReward) {
@@ -410,7 +466,7 @@ class TaskListingService
         // }
 
 
-        
+
         return $output2;
     }
 
