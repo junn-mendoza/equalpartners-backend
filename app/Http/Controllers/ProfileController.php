@@ -108,6 +108,62 @@ class ProfileController extends Controller
         if ($request->hasFile('image')) {
             $hasImage = true;
             $image = $request->file('image');
+
+            // Define the directory and generate a unique filename
+            $directory = 'storage/profile/' . $user->id;
+            
+            $filename = uniqid() .  '.' . $image->getClientOriginalExtension();  // Directly using .webp extension
+            $tosave = 'profile/' . $user->id . '/' . $filename;
+            //$file->move(public_path('images'), $filename); // M
+            // Define the full path for saving
+            $webpPath = public_path($directory . '/' . $filename);
+        
+            // Convert the image directly to .webp
+            $webpPath = $this->imageDataService->convertToWebp( $webpPath);
+
+            // Create the directory if it doesn't exist
+            if (!file_exists(public_path($directory))) {
+                mkdir(public_path($directory), 0755, true);
+            }
+
+            // Full path to save the image
+            $imagePath = public_path($directory . '/' . $filename);
+
+            // Save the image to the public/images/profile directory
+            $image->move(public_path($directory), $filename);
+
+            // Convert the saved image to WebP
+            $webpPath = public_path($directory . '/' . pathinfo($filename, PATHINFO_FILENAME) . '.webp');
+            $this->imageDataService->convertToWebp($imagePath, $webpPath);
+
+            // Optionally, remove the original image after converting to WebP
+            //unlink($imagePath); // Save the data to the database
+
+
+        }
+
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        // $user->age = $request->input('age');
+        // $user->role = $request->input('role');
+        if ($hasImage) {
+            $user->profile =  $tosave;
+        }
+        $user->save();
+
+        return response()->json(['message' => 'Profile image uploaded successfully!', 'user' => $user], 200);
+
+        //return response()->json(['message' => 'No image uploaded!'], 400);
+    }
+
+    public function profile2(ProfileUpdateRequest $request)
+    {
+        $request->validated();
+        $user = Auth::user();
+        $hasImage = false;
+        if ($request->hasFile('image')) {
+            $hasImage = true;
+            $image = $request->file('image');
             $path = 'profile/' . $user->id . '/' . uniqid() . '.' . $image->getClientOriginalExtension();
 
             // Convert the image directly to .webp

@@ -11,9 +11,42 @@ use App\Http\Controllers\RewardController;
 use App\Http\Controllers\ForfeitController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
-
+use Illuminate\Support\Facades\Artisan;
 Route::get('/testprod', function () {
     return response()->json('test only');
+});
+
+Route::get('/run-storage-link', function() {
+    Artisan::call('storage:link');
+    return 'Storage link created successfully';
+});
+
+Route::get('/clear-cache', function() {
+    // Clear application cache
+    Artisan::call('cache:clear');
+    echo "Application cache cleared<br>";
+
+    // Clear route cache
+    Artisan::call('route:clear');
+    echo "Route cache cleared<br>";
+
+    // Clear config cache
+    Artisan::call('config:clear');
+    echo "Config cache cleared<br>";
+
+    // Clear view cache
+    Artisan::call('view:clear');
+    echo "View cache cleared<br>";
+
+    // Clear compiled files
+    Artisan::call('clear-compiled');
+    echo "Compiled files cleared<br>";
+
+    // Re-optimize the app (Optional)
+    Artisan::call('optimize:clear');
+    echo "Optimization caches cleared<br>";
+
+    return "All caches have been cleared and reset.";
 });
 
 Route::controller(TaskController::class)->group(function () {
