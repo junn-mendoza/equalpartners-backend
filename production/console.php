@@ -14,4 +14,4 @@ Schedule::call(function () {
     $taskService = new TaskService();
     $taskService->runDailyTask();
     
-})->dailyAt('17:24')->timezone('Europe/London');
+})->daily('17:19');

@@ -24,6 +24,11 @@ class AuthController extends Controller
         return $this->authService->register($request->all());
     }
 
+    public function save_token(Request $request) 
+    {
+        return $this->authService->pushtoken($request->all());
+    }
+
     public function login(LoginRequest $request)
     {
         return $this->authService->login($request->validated());

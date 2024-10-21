@@ -47,4 +47,8 @@ class TaskController extends Controller
     {
         return $this->taskService->filter($request->all());
     }
+    public function task_current()
+    {
+        return $this->taskService->current();
+    }
 }

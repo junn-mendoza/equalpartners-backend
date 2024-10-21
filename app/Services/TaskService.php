@@ -14,6 +14,7 @@ use App\Models\TaskUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use GuzzleHttp\Client;
 
 class TaskService
 {
@@ -152,9 +153,53 @@ class TaskService
         return response()->json('You\'re not own the task.', 200);
     }
 
+    public function runDailyTask()
+    {
+        $data = $this->current();
+
+        // Check if it's a JsonResponse and extract data
+        if ($data instanceof \Illuminate\Http\JsonResponse) {
+            $tasks = $data->getData(true); // Convert to array
+            //dd($data); // Dump the data instead of the whole response object
+        } else {
+            $tasks = $data; // If it's not a JsonResponse, handle it normally
+        }
+        foreach($tasks ?? [] as $task) {
+            //dd($task['token'],$task['name']);
+            $this->sendPushNotification($task['token'], $task['name']);
+        }
+    }
+
+    private function sendPushNotification($expoPushToken, $message)
+    {
+        $client = new Client();
+        $url = 'https://exp.host/--/api/v2/push/send';
+
+        $response = $client->post($url, [
+            'json' => [
+                'to' => $expoPushToken,
+                'sound' => 'default',
+                'body' => $message,
+                'data' => ['extraData' => 'data here'],
+            ]
+        ]);
+
+        Log::info("Notification sent: " . $response->getBody());
+    }
+    public function current()
+    {
+        $places = Task::with([
+            'frequencies',
+            'categories', 
+            'users' 
+        ])->get();
+
+        $tasks = new TaskListingService();
+        $sorted = $tasks->buildTaskCurrent($places);
+        return response()->json($sorted, 200);    
+    }
     public function filter($data)
     {
-
         $places = Task::with([
             'frequencies',
             'categories' => function ($query) use ($data) {

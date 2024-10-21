@@ -54,6 +54,7 @@ Route::controller(TaskController::class)->group(function () {
         Route::post('/tasks', 'save_task');
         Route::post('/isdone', 'isdone');
         Route::post('/taskfilter', 'task_filter');
+        Route::get('/taskcurrent', 'task_current');
         Route::get('/task/{task_id}', 'get_task');
 
         Route::get('/tasks/{place_id}', function ($place_id) {
@@ -111,6 +112,7 @@ Route::controller(ProfileController::class)->group(function () {
 
 
 Route::controller(AuthController::class)->group(function () {
+    Route::post('/store-push-token','save_token');
     Route::post('/register', 'register');
     Route::post('/login', 'login');
     Route::post('/forgotpassword', 'forgotpassword');
@@ -138,7 +140,10 @@ Route::controller(ForfeitController::class)->group(function () {
     });
 });
 
-
+Route::get('/test1', function () {
+    $taskService = new App\Services\TaskService();
+    $taskService->runDailyTask();
+});
 // Route::get('/test1', function () {
 //     $calendar = App\Models\Task::with(['users', 'frequencies', 'categories'])
 //         ->where('place_id', 1)  // Assuming you are filtering tasks by place_id

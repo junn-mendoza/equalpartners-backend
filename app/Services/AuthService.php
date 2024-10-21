@@ -59,8 +59,17 @@ class AuthService
         return response()->json('Cannot generate the api_key.', 500);
     }
 
-
-
+    public function pushtoken($data) 
+    {
+        $user = User::where('id', $data['id'])->first();
+        if($user) {
+            $user->push_token = $data['token'];
+            $user->save();
+            return response()->json('Sucessfully saved the push token.', 200);
+        }  else
+        return response()->json('User not found.', 401);
+    }
+    
     public function passwordchange($data)
     {
         $user = User::where('email', $data['email'])->first();
