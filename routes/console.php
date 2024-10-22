@@ -13,4 +13,4 @@ Artisan::command('inspire', function () {
 Schedule::call(function () {
     $taskService = new TaskService();
     $taskService->runDailyTask();
-})->dailyAt('8:00')->timezone('Europe/London');
+})->dailyAt('7:00')->timezone('Europe/London');
