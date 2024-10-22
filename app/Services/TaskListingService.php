@@ -107,7 +107,7 @@ class TaskListingService
     {
         $daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        $dateText = 'Every ' .  ($timeframe == 'weekly' ? '' : self::ordinal($repeat) . ' ') . ($timeframe == 'weekly' ? 'week' : 'month');
+        $dateText = 'Every ' .  ($timeframe == 'weekly' ? $repeat . ' ' : self::ordinal($repeat) . ' ') . ($timeframe == 'weekly' ? 'week' . ($repeat > 1 ? 's' : '') : 'month');
 
         if ($timeframe === 'weekly') {
             $days = array_map(fn($frequency) => $daysOfWeek[$frequency], $frequencies);
@@ -145,17 +145,16 @@ class TaskListingService
 
     private function addTaskToOutputCurrent(&$outputCurrent, $task, $user)
     {
-        if($user->pivot->isDone === 0 && $task->reminder === 1) {
+        if ($user->pivot->isDone === 0 && $task->reminder === 1) {
             $outputCurrent[] = [
-                 'name' => $task->name,
-                 'reminder' => $task->reminder,
-                 'user_id' => $user->id,
-                 'task_id' => $task->id,
-                 'isDone'  => $user->pivot->isDone,
-                 'token' => $user->push_token,
-             ];
+                'name' => $task->name,
+                'reminder' => $task->reminder,
+                'user_id' => $user->id,
+                'task_id' => $task->id,
+                'isDone'  => $user->pivot->isDone,
+                'token' => $user->push_token,
+            ];
         }
-        
     }
 
     private function addCalendarOutput(&$outputCalendar, $task, $user, $dueDate, $header, $dataText)
